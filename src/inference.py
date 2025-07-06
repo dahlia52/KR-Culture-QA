@@ -243,10 +243,16 @@ def load_llm(device):
         temperature=0.7,
     )
 
-    return HuggingFacePipeline(pipeline=pipe), tokenizer
+    return HuggingFacePipeline(pipeline=pipe)
 
 
 def main(args):
+    print(f"현재 사용 가능한 장치: {torch.cuda.get_device_name(0)}")
+    print(f"총 VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
+
+    device = torch.device(args.device)
+    torch.cuda.reset_peak_memory_stats(device)
+    
     print("=" * 50)
     print("Starting Korean Culture QA System")
     print("=" * 50)
@@ -256,7 +262,7 @@ def main(args):
         raise Exception("Failed to initialize retriever")
     print("✅ Retriever loaded successfully.")
     
-    llm, tokenizer = load_llm(device=args.device)
+    llm = load_llm(device=args.device)
     if not llm:
         raise Exception("Failed to initialize language model")
     print("✅ Language model loaded successfully.")
@@ -301,6 +307,10 @@ def main(args):
     print("\n" + "=" * 50)
     print("QA Session Completed")
     print("=" * 50)
+
+    torch.cuda.synchronize()
+    print(f"최대 VRAM 사용량: {torch.cuda.max_memory_allocated() / 1024**3:.2f} GB")
+
 
 if __name__ == '__main__':
     exit(main(parser.parse_args()))
