@@ -1,0 +1,3 @@
+retrieval_docs/chroma_db/*
+retrieval_docs/kowiki_dataset/*
+resource/QA/result.json

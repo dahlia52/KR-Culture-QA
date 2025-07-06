@@ -1,0 +1,16 @@
+transformers==4.51.3
+--index-url https://download.pytorch.org/whl/cu118
+torch==2.2.2+cu118
+torchvision==0.17.2+cu118
+datasets
+numpy
+tqdm
+accelerate
+faiss-cpu
+langchain
+langgraph
+langchain-community
+langchain-huggingface
+langchain-core
+sentence-transformers
+bitsandbytes
