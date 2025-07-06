@@ -28,7 +28,7 @@ CHROMA_DB_PATH = os.path.join(current_dir, 'retrieval_docs/chroma_db')
 qa_dir = os.path.join(current_dir, 'resource/QA')
 os.makedirs(qa_dir, exist_ok=True)
 
-QA_DATASET_PATH = os.path.join(qa_dir, 'sample_qa.json')
+QA_DATASET_PATH = os.path.join(qa_dir, 'korean_culture_qa_V1.0_test+.json')
 QA_OUTPUT_PATH = os.path.join(qa_dir, 'result.json')
 
 parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
@@ -71,7 +71,7 @@ def retrieve_documents(state: GraphState) -> GraphState:
     return {"documents": documents}
 
 
-def make_prompt(question_type: str) -> str:
+def make_prompt(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str) -> str:
     # question type별 instruction 정의
     type_instructions = {
         "선다형": (
@@ -126,29 +126,20 @@ def make_prompt(question_type: str) -> str:
     # RAG에 사용될 최종 프롬프트 템플릿
     template = """{instruction}
 
-[기타 정보]
-- 카테고리: {category}
-- 도메인: {domain}
-- 주제 키워드: {topic_keyword}
+    [기타 정보]
+    - 카테고리: {category}
+    - 도메인: {domain}
+    - 주제 키워드: {topic_keyword}
 
-[참고문헌]
-{context}
+    [참고문헌]
+    {context}
 
-[질문]
-{question}
+    [질문]
+    {question}
 
-답변:
-"""
-    return template
-    # .format(
-    #     instruction=instruction,
-    #     category=state.get("category", ""),
-    #     domain=state.get("domain", ""),
-    #     topic_keyword=state.get("topic_keyword", ""),
-    #     context=state.get("context", ""),
-    #     question=state.get("question", "")
-    # )
-
+    답변:
+    """
+    return template.format(instruction=instruction, category=category, domain=domain, topic_keyword=topic_keyword, context=context, question=question)
 
 
 def generate_answer(state: GraphState) -> GraphState:
@@ -156,24 +147,28 @@ def generate_answer(state: GraphState) -> GraphState:
     llm = state["llm"]
 
     def format_docs(docs):
-        return "\\n\\n".join(doc.page_content for doc in docs)
+        return "\n\n".join(doc.page_content for doc in docs)
 
-    # RAG prompt template
-    template = make_prompt(state["question_type"])
-    prompt = ChatPromptTemplate.from_template(template)
+    system_prompt = """You are a helpful AI assistant. 
+    당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. 
+    단, 동일한 문장을 절대 반복하지 마시오."""
 
-    rag_chain = (prompt | llm | StrOutputParser())
+    context = format_docs(state["documents"])
 
-    inputs = {
-        "instruction": state["question_type"],
-        "context": format_docs(state["documents"]),
-        "category": state["category"],
-        "domain": state["domain"],
-        "topic_keyword": state["topic_keyword"],
-        "question": state["question"]
-    }
-    answer = rag_chain.invoke(inputs)
-    
+    user_prompt = make_prompt(
+        question_type=state["question_type"],
+        category=state["category"],
+        domain=state["domain"],
+        topic_keyword=state["topic_keyword"],
+        context=context,
+        question=state["question"]
+    )
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+    answer = llm.invoke(messages)
     return {"answer": answer}
 
 
@@ -242,6 +237,10 @@ def load_llm(device):
         model=model,
         tokenizer=tokenizer,
         max_new_tokens=1024,
+        do_sample=True,
+        top_p=0.9,
+        top_k=50,
+        temperature=0.7,
     )
 
     return HuggingFacePipeline(pipeline=pipe), tokenizer
@@ -290,11 +289,8 @@ def main(args):
         q = result[idx]["input"]["question"]
         output_text = app.invoke({"retriever": retriever, "question": q, "topic_keyword": topic_keyword, "question_type": question_type, "category": category, "domain": domain, "llm": llm})["answer"]
 
-        # 출력에서 "답변: " 접두어 제거
-        if output_text.startswith("답변: "):
-            output_text = output_text[4:]
-        elif output_text.startswith("답변:"):
-            output_text = output_text[3:]
+        # Process output
+        output_text = output_text.split("답변:\n")[1].strip()
 
         result[idx]["output"] = {"answer": output_text}
 
