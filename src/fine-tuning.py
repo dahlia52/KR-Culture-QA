@@ -14,10 +14,9 @@ from transformers import (
     DataCollatorForLanguageModeling,
 )
 
-# Get the project root directory (one level up from src)
+# Get the project root directory
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# --- Path Configurations ---
 DEFAULT_MODEL_ID = "skt/A.X-4.0-Light"
 DEFAULT_TRAIN_DATA_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_train+.json')
 DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model')
@@ -32,7 +31,7 @@ def parse_arguments():
     # Training hyperparameters
     parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=4, help="Training batch size")
-    parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate")
+    parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate")
     parser.add_argument("--device", type=str, default="cuda", help="Device to train on (cuda or cpu)")
 
     return parser.parse_args()
@@ -64,14 +63,14 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer) -> DatasetDi
 
 
 def main():
-    """Main function to run the fine-tuning process."""
     args = parse_arguments()
 
-    print("--- Starting Fine-Tuning Process ---")
+    print("=" * 50)
+    print("Starting Fine-Tuning")
     print(f"Model ID: {args.model_id}")
     print(f"Training Data: {args.data_path}")
+    print("=" * 50)
 
-    # 1. Load Tokenizer and Model
     print("\n1. Loading tokenizer and model...")
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     # Set padding token if it's not already set
@@ -93,13 +92,11 @@ def main():
     )
     print("✅ Tokenizer and model loaded.")
 
-    # 2. Load and Prepare Dataset
     print("\n2. Loading and preparing dataset...")
     dataset = load_and_prepare_data(args.data_path, tokenizer)
     print("✅ Dataset prepared.")
     print(f"Training dataset size: {len(dataset['train'])}")
 
-    # 3. Configure Training
     print("\n3. Configuring training...")
     training_args = TrainingArguments(
         output_dir=args.output_dir,

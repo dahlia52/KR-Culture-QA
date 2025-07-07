@@ -217,6 +217,10 @@ def load_retriever(device, k=3) -> Optional[Chroma]:
 
 def load_llm(device):
     tokenizer = AutoTokenizer.from_pretrained(GENERATOR_NAME)
+    # Set padding token if it's not already set
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        
     #model = AutoModelForCausalLM.from_pretrained(GENERATOR_NAME).to(device)
     
     quantization_config = BitsAndBytesConfig(

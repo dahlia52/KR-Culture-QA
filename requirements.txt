@@ -12,3 +12,4 @@ langchain-huggingface
 langchain-core
 sentence-transformers
 bitsandbytes
+chromadb
