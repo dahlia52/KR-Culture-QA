@@ -21,14 +21,14 @@ from data import CustomDataset
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KOWIKI_DATASET_PATH = os.path.join(current_dir, 'retrieval_docs/kowiki_dataset')
-CHROMA_DB_PATH = os.path.join(current_dir, 'retrieval_docs/chroma_db')
+KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
+CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
 
 # Create QA directory if it doesn't exist
 qa_dir = os.path.join(current_dir, 'resource/QA')
 os.makedirs(qa_dir, exist_ok=True)
 
-QA_DATASET_PATH = os.path.join(qa_dir, 'korean_culture_qa_V1.0_test+.json')
+QA_DATASET_PATH = os.path.join(qa_dir, 'sample_qa.json')
 QA_OUTPUT_PATH = os.path.join(qa_dir, 'result.json')
 
 parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
@@ -173,22 +173,6 @@ def generate_answer(state: GraphState) -> GraphState:
 
 
 def load_retriever(device, k=3) -> Optional[Chroma]:
-    if not os.path.exists(KOWIKI_DATASET_PATH):
-        print("Dataset not found. Please run the preparation script first.")
-        return None
-    
-    # Load dataset
-    dataset = load_from_disk(KOWIKI_DATASET_PATH)
-
-    # Create documents with metadata
-    documents = []
-    for text, doc_id in zip(dataset["text"], dataset["id"]):
-        doc = Document(
-            page_content=text,
-            metadata={"id": str(doc_id), "source": "kowiki"}
-        )
-        documents.append(doc)
-    
     # Initialize embeddings
     embeddings = HuggingFaceEmbeddings(
         model_name=RETRIEVER_NAME,
@@ -204,6 +188,22 @@ def load_retriever(device, k=3) -> Optional[Chroma]:
             embedding_function=embeddings
         )
     else:
+        if not os.path.exists(KOWIKI_DATASET_PATH):
+            print("Dataset not found. Please run the preparation script first.")
+            return None
+    
+        # Load dataset
+        dataset = load_from_disk(KOWIKI_DATASET_PATH)
+
+        # Create documents with metadata
+        documents = []
+        for text, doc_id in zip(dataset["text"], dataset["id"]):
+            doc = Document(
+                page_content=text,
+                metadata={"id": str(doc_id), "source": "kowiki"}
+            )
+            documents.append(doc)
+
         print("Creating new Chroma database...")
         vector_store = Chroma.from_documents(
             documents=documents,
@@ -309,7 +309,7 @@ def main(args):
     print("=" * 50)
 
     torch.cuda.synchronize()
-    print(f"최대 VRAM 사용량: {torch.cuda.max_memory_allocated() / 1024**3:.2f} GB")
+    print(f"최대 VRAM 사용량: {torch.cuda.max_memory_allocated(device) / 1024**3:.2f} GB")
 
 
 if __name__ == '__main__':
