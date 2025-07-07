@@ -1,5 +1,6 @@
-transformers==4.41.1
-torch==2.7.1
+# pip install -r requirements.txt --use-pep517
+transformers==4.53.1
+torch==2.7.0
 datasets
 numpy
 tqdm
@@ -13,3 +14,7 @@ langchain-core
 sentence-transformers
 bitsandbytes
 chromadb
+Pyrebase4
+xformers --index-url https://download.pytorch.org/whl/cu118
+vllm==0.9.1
+

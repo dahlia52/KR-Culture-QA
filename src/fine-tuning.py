@@ -23,7 +23,6 @@ DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model')
 
 
 def parse_arguments():
-    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Fine-tuning a language model on a custom QA dataset.")
     parser.add_argument("--model_id", type=str, default=DEFAULT_MODEL_ID, help="Hugging Face model ID")
     parser.add_argument("--data_path", type=str, default=DEFAULT_TRAIN_DATA_PATH, help="Path to the training data JSON file")
