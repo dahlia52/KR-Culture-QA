@@ -10,8 +10,6 @@ from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
-from graphstate import GraphState
-from langgraph.graph import StateGraph, END
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -19,7 +17,7 @@ from transformers import (
     BitsAndBytesConfig
 )
 from make_prompt import make_prompt, format_docs
-from retrieve import retrieve_documents, load_retriever
+from retrieve import load_retriever
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,10 +29,10 @@ qa_dir = os.path.join(current_dir, 'resource/QA')
 os.makedirs(qa_dir, exist_ok=True)
 
 QA_DATASET_PATH = os.path.join(qa_dir, 'sample_qa.json')
-QA_OUTPUT_PATH = os.path.join(qa_dir, 'result.json')
+QA_OUTPUT_PATH = os.path.join(qa_dir, 'result_train.json')
 
 # Hyperparameters
-K = 5
+K = 3
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
@@ -49,33 +47,6 @@ def parse_arguments():
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
     g.add_argument("--batch_size", type=int, default=10, help="Batch size for inference.")
     return parser.parse_args()
-
-
-def generate_answer(state: GraphState) -> GraphState:
-    print("---GENERATING ANSWER---")
-    llm = state["llm"]
-
-    system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. 
-    단, 동일한 문장을 절대 반복하지 마시오."""
-
-    context = format_docs(state["documents"])
-
-    user_prompt = make_prompt(
-        question_type=state["question_type"],
-        category=state["category"],
-        domain=state["domain"],
-        topic_keyword=state["topic_keyword"],
-        context=context,
-        question=state["question"],
-        fewshot=True
-    )
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
-    ]
-    answer = llm.invoke(messages)
-    return {"answer": answer}
 
 
 
@@ -113,11 +84,11 @@ def load_llm(model_id, device, quantize=False, batch_size=1):
         do_sample=True,
         top_p=0.9,
         top_k=30,
-        temperature=0.7,
+        temperature=0.8,
         batch_size=batch_size
     )
 
-    return HuggingFacePipeline(pipeline=pipe)
+    return pipe
 
 
 def main():
@@ -140,56 +111,63 @@ def main():
         raise Exception("Failed to initialize retriever")
     print("✅ Retriever loaded successfully.")
     
-    llm = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
-    if not llm:
-        raise Exception("Failed to initialize language model")
-    print("✅ Language model loaded successfully.")
-    
-    workflow = StateGraph(GraphState)
-    workflow.add_node("retrieve", retrieve_documents)
-    workflow.add_node("generate", generate_answer)
-    workflow.set_entry_point("retrieve")
-    workflow.add_edge("retrieve", "generate")
-    workflow.add_edge("generate", END)
-    
-    print("Compiling workflow...")
-    app = workflow.compile()
+    pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
+    if not pipe:
+        raise Exception("Failed to initialize language model pipeline")
+    print("✅ Language model pipeline loaded successfully.")
 
     file_test = args.input
-    with open(file_test, "r") as f:
+    with open(file_test, "r", encoding="utf-8") as f:
         result_data = json.load(f)
 
     print("\n" + "=" * 50)
     print("Starting QA Session")
     print("=" * 50)
 
-    inputs_for_batch = []
-    for item in result_data:
-        inputs_for_batch.append({
-            "retriever": retriever,
-            "llm": llm,
-            "question": item["input"]["question"],
-            "topic_keyword": item["input"]["topic_keyword"],
-            "question_type": item["input"]["question_type"],
-            "category": item["input"]["category"],
-            "domain": item["input"]["domain"],
-        })
+    prompts = []
+    system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. 
+    단, 동일한 문장을 절대 반복하지 마시오."""
+    
+    print("Retrieving documents and preparing prompts...")
+    for item in tqdm.tqdm(result_data):
+        question = item["input"]["question"]
+        documents = retriever.invoke(question)
+        context = format_docs(documents)
+        
+        user_prompt = make_prompt(
+            question_type=item["input"]["question_type"],
+            category=item["input"]["category"],
+            domain=item["input"]["domain"],
+            topic_keyword=item["input"]["topic_keyword"],
+            context=context,
+            question=question,
+            fewshot=True
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        # pipeline's tokenizer will apply the chat template
+        prompts.append(messages)
 
-    all_outputs = []
-    for i in tqdm.tqdm(range(0, len(inputs_for_batch), args.batch_size)):
-        batch_inputs = inputs_for_batch[i:i + args.batch_size]
-        batch_outputs = app.batch(batch_inputs)
-        all_outputs.extend(batch_outputs)
+    print("Generating answers in batch...")
+    outputs = pipe(prompts)
 
-    for idx, output in enumerate(all_outputs):
-        output_text = output["answer"]
+    print("Processing generated answers...")
+    for idx, output in enumerate(tqdm.tqdm(outputs)):
+        # The output from the pipeline is a list with a dictionary
+        generated_text = output[0]['generated_text']
+        print(generated_text)
+        
+        answer = generated_text[2]['content']
+        
         print("="*30)
-        print(output_text)
-        try:
-            output_text = output_text.split("답변:\n")[1].strip()
-        except Exception:
-            output_text = output_text.strip()
-        result_data[idx]["output"] = {"answer": output_text}
+        print(answer.strip())
+        print("="*30)
+        
+        result_data[idx]["output"] = {"answer": answer.strip()}
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(json.dumps(result_data, ensure_ascii=False, indent=4))

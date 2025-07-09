@@ -1,6 +1,4 @@
-def make_prompt(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str) -> str:
-    # question type별 instruction 정의
-    type_instructions = {
+type_instructions = {
         "선다형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"
@@ -29,28 +27,34 @@ def make_prompt(question_type: str, category: str, domain: str, topic_keyword: s
             "[예시]\n"
             "질문: 조선 후기의 실학 사상가로 목민심서를 쓴 인물은?\n"
             "답변: 정약용"
-        ),
-        "교정형": (
-            "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
-            "[지침]\n"
-            "주어진 문장이 올바른지 판단하고, 틀린 경우 올바르게 교정하여 \"~가 옳다.\" 형태로 답변하고, 그 이유를 설명하시오.\n\n"
-            "[예시]\n"
-            "질문: 다음 문장에서 어문 규범에 부합하지 않는 부분을 찾아 고치고, 그 이유를 설명하세요.\n\"오늘은 퍼즐 마추기를 해 볼 거예요.\"\n"
-            "답변: \"오늘은 퍼즐 맞추기를 해 볼 거예요.\"가 옳다. '제자리에 맞게 붙이다, 주문하다, 똑바르게 하다, 비교하다' 등의 뜻이 있는 말은 '마추다'가 아닌 '맞추다'로 적는다."
-        ),
-        "선택형": (
-            "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
-            "[지침]\n"
-            "주어진 보기들 중에서 가장 적절한 것을 선택하여 \"~가 옳다.\" 형태로 답변하고, 그 이유를 설명하시오.\n\n"
-            "[예시]\n"
-            "질문: \"나는 그를 본 적이 있음을 {기억해냈다/기억해 냈다}.\" 가운데 올바른 것을 선택하고, 그 이유를 설명하세요.\n"
-            "답변: \"나는 그를 본 적이 있음을 기억해 냈다.\"가 옳다. '기억해 냈다'는 '기억하-+-아+냈다'의 구성이다. 이처럼 '본용언+-아/-어+보조 용언' 구성인 경우 본용언과 보조 용언을 붙여 쓰는 것이 허용되지만, 이러한 구성을 갖더라도 앞말이 3음절 이상의 합성어나 파생어라면 보조 용언을 붙여 쓰는 것이 허용되지 않는다. '기억하다'는 '기억'과 '-하다'가 결합한 파생어이며 '기억해'는 3음절이다. 따라서 '기억해'와 '냈다'는 띄어 써야 한다."
         )
     }
 
-    instruction = type_instructions.get(question_type, "")
+type_instructions_with_fewshot = {
+        "선다형": (
+            "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
+            "[지침]\n"
+            "주어진 보기 중에서 가장 적절한 답을 숫자로만 응답하시오.\n\n"
+        ),
+        "서술형": (
+            "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
+            "[지침]\n"
+            "질문에 대한 답변을 완성된 문장으로 서술하시오.\n\n"
+        ),
+        "단답형": (
+            "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
+            "[지침]\n"
+            "질문에 대한 답을 2단어 이내로 간단히 답하시오.\n\n"
+        )
+    }
 
-    # RAG에 사용될 최종 프롬프트 템플릿
+
+
+def make_prompt(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False) -> str:
+    if fewshot:
+        instruction = type_instructions_with_fewshot.get(question_type, "")
+    else:
+        instruction = type_instructions.get(question_type, "")
     template = """{instruction}
 
     [기타 정보]
@@ -67,3 +71,7 @@ def make_prompt(question_type: str, category: str, domain: str, topic_keyword: s
     답변:
     """
     return template.format(instruction=instruction, category=category, domain=domain, topic_keyword=topic_keyword, context=context, question=question)
+    
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)

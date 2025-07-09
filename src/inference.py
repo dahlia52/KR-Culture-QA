@@ -13,6 +13,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.llms import VLLM
 from langgraph.graph import StateGraph, END
 from make_prompt import make_prompt
+from graphstate import GraphState
+from retrieve import retrieve_documents, load_retriever
+
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,44 +29,22 @@ os.makedirs(qa_dir, exist_ok=True)
 QA_DATASET_PATH = os.path.join(qa_dir, 'sample_qa.json')
 QA_OUTPUT_PATH = os.path.join(qa_dir, 'result.json')
 
-parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
-
-g = parser.add_argument_group("Common Parameter")
-g.add_argument("--input", type=str, default=QA_DATASET_PATH, help="input filename")
-g.add_argument("--output", type=str, default=QA_OUTPUT_PATH, help="output filename")
-g.add_argument("--model_id", type=str, default="skt/A.X-4.0-Light", help="huggingface model id")
-g.add_argument("--tokenizer", type=str, default="skt/A.X-4.0-Light", help="huggingface tokenizer")
-g.add_argument("--device", type=str, default="cuda", help="device to load the model")
-g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
-# fmt: on
-
-args = parser.parse_args()
-
 # Hyperparameters
 K = 3
 
-# Model and path configurations
-RETRIEVER_NAME = "BAAI/bge-m3"
-GENERATOR_NAME = args.model_id
+def parse_arguments():
+    parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
 
-
-class GraphState(TypedDict):
-    question: str
-    question_type: str
-    category: str
-    domain: str
-    topic_keyword: str
-    documents: List[Document]
-    retriever: Chroma
-    llm: VLLM
-    answer: str
-
-
-def retrieve_documents(state: GraphState) -> GraphState:
-    print("---RETRIEVING DOCUMENTS---")
-    question = state["question"]
-    documents = state["retriever"].invoke(question)
-    return {"documents": documents}
+    g = parser.add_argument_group("Common Parameter")
+    g.add_argument("--input", type=str, default=QA_DATASET_PATH, help="input filename")
+    g.add_argument("--output", type=str, default=QA_OUTPUT_PATH, help="output filename")
+    g.add_argument("--model_id", type=str, default="skt/A.X-4.0-Light", help="huggingface model id")
+    g.add_argument("--tokenizer", type=str, default="skt/A.X-4.0-Light", help="huggingface tokenizer")
+    g.add_argument("--device", type=str, default="cuda", help="device to load the model")
+    g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
+    g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
+    g.add_argument("--batch_size", type=int, default=10, help="Batch size for inference.")
+    return parser.parse_args()
 
 
 def generate_answer(state: GraphState) -> GraphState:
@@ -84,70 +65,37 @@ def generate_answer(state: GraphState) -> GraphState:
         domain=state["domain"],
         topic_keyword=state["topic_keyword"],
         context=context,
-        question=state["question"]
+        question=state["question"],
+        fewshot=True
     )
 
     answer = llm.invoke(user_prompt)
     return {"answer": answer}
 
 
-def load_retriever(device, k=3) -> Optional[Chroma]:
-    # Initialize embeddings
-    embeddings = HuggingFaceEmbeddings(
-        model_name=RETRIEVER_NAME,
-        model_kwargs={"device": device},
-        encode_kwargs={"normalize_embeddings": True}
-    )
-    
-    # Load or create ChromaDB
-    if os.path.exists(CHROMA_DB_PATH):
-        print("Loading existing Chroma database...")
-        vector_store = Chroma(
-            persist_directory=CHROMA_DB_PATH,
-            embedding_function=embeddings
-        )
-    else:
-        if not os.path.exists(KOWIKI_DATASET_PATH):
-            print("Dataset not found. Please run the preparation script first.")
-            return None
-    
-        # Load dataset
-        dataset = load_from_disk(KOWIKI_DATASET_PATH)
-
-        # Create documents with metadata
-        documents = []
-        for text, doc_id in zip(dataset["text"], dataset["id"]):
-            doc = Document(
-                page_content=text,
-                metadata={"id": str(doc_id), "source": "kowiki"}
-            )
-            documents.append(doc)
-
-        print("Creating new Chroma database...")
-        vector_store = Chroma.from_documents(
-            documents=documents,
-            embedding=embeddings,
-            persist_directory=CHROMA_DB_PATH
-        )
-        vector_store.persist()
-    
-    return vector_store.as_retriever(search_kwargs={"k": k})
-
-
-def load_generator():
-    llm = VLLM(
-        model=GENERATOR_NAME,
-        tensor_parallel_size=1, 
-        trust_remote_code=True,
-        max_new_tokens=1024,
-        top_k=20,
-        top_p=0.9,
-        temperature=0.7,
-    )
+def load_generator(model_id, quantize=False):
+    vllm_kwargs = {
+        "model": model_id,
+        "tensor_parallel_size": 1,
+        "trust_remote_code": True,
+        "max_new_tokens": 1024,
+        "top_k": 30,
+        "top_p": 0.9,
+        "temperature": 0.7,
+    }
+    if quantize:
+        print("Quantizing model with bitsandbytes")
+        vllm_kwargs["quantization"] = "bitsandbytes"
+        
+    llm = VLLM(**vllm_kwargs)
     return llm
 
 
-def main(args):
+def main():
+    args = parse_arguments()
+    RETRIEVER_NAME = "BAAI/bge-m3"
+    GENERATOR_NAME = args.model_id
+    
     print(f"Current device: {torch.cuda.get_device_name(0)}")
     print(f"Total VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
 
@@ -158,12 +106,12 @@ def main(args):
     print("Starting Korean Culture QA System")
     print("=" * 50)
     
-    retriever = load_retriever(device=args.device, k=K)
+    retriever = load_retriever(model=RETRIEVER_NAME, chroma_db_path=CHROMA_DB_PATH, device=args.device, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
     if not retriever:
         raise Exception("Failed to initialize retriever")
     print("✅ Retriever loaded successfully.")
     
-    llm = load_generator()
+    llm = load_generator(model_id=GENERATOR_NAME, quantize=args.quantize)
     if not llm:
         raise Exception("Failed to initialize language model")
     print("✅ Language model loaded successfully.")
@@ -179,35 +127,43 @@ def main(args):
     app = workflow.compile()
 
     file_test = args.input
-    #dataset = CustomDataset(file_test, tokenizer)
-
     with open(file_test, "r") as f:
-        result = json.load(f)
+        result_data = json.load(f)
 
     print("\n" + "=" * 50)
     print("Starting QA Session")
     print("=" * 50)
 
-    for idx in tqdm.tqdm(range(len(result))):
-        topic_keyword = result[idx]["input"]["topic_keyword"]
-        question_type = result[idx]["input"]["question_type"]
-        category = result[idx]["input"]["category"]
-        domain = result[idx]["input"]["domain"]
-        q = result[idx]["input"]["question"]
-        output_text = app.invoke({"retriever": retriever, "question": q, "topic_keyword": topic_keyword, "question_type": question_type, "category": category, "domain": domain, "llm": llm})["answer"]
+    inputs_for_batch = []
+    for item in result_data:
+        inputs_for_batch.append({
+            "retriever": retriever,
+            "llm": llm,
+            "question": item["input"]["question"],
+            "topic_keyword": item["input"]["topic_keyword"],
+            "question_type": item["input"]["question_type"],
+            "category": item["input"]["category"],
+            "domain": item["input"]["domain"],
+        })
 
-        # Process output
+    all_outputs = []
+    for i in tqdm.tqdm(range(0, len(inputs_for_batch), args.batch_size)):
+        batch_inputs = inputs_for_batch[i:i + args.batch_size]
+        batch_outputs = app.batch(batch_inputs)
+        all_outputs.extend(batch_outputs)
+
+    for idx, output in enumerate(all_outputs):
+        output_text = output["answer"]
         print("="*30)
         print(output_text)
         try:
             output_text = output_text.split("답변:\n")[1].strip()
-        except:
+        except Exception:
             output_text = output_text.strip()
-
-        result[idx]["output"] = {"answer": output_text}
+        result_data[idx]["output"] = {"answer": output_text}
 
     with open(args.output, "w", encoding="utf-8") as f:
-        f.write(json.dumps(result, ensure_ascii=False, indent=4))
+        f.write(json.dumps(result_data, ensure_ascii=False, indent=4))
 
     
     print("\n" + "=" * 50)
@@ -219,4 +175,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    exit(main(parser.parse_args()))
+    exit(main())
