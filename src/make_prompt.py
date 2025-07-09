@@ -1,4 +1,4 @@
-type_instructions = {
+type_instructions_with_fewshot = {
         "선다형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"
@@ -30,7 +30,7 @@ type_instructions = {
         )
     }
 
-type_instructions_with_fewshot = {
+type_instructions = {
         "선다형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"

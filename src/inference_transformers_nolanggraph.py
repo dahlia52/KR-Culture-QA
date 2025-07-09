@@ -92,40 +92,7 @@ def load_llm(model_id, device, quantize=False, batch_size=1):
     return pipe
 
 
-def main():
-    args = parse_arguments()
-    RETRIEVER_NAME = "BAAI/bge-m3"
-    GENERATOR_NAME = args.model_id
-
-    print(f"Current device: {torch.cuda.get_device_name(0)}")
-    print(f"Total VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
-
-    device = torch.device(args.device)
-    torch.cuda.reset_peak_memory_stats(device)
-    
-    print("=" * 50)
-    print("Starting Korean Culture QA System")
-    print("=" * 50)
-
-    if args.retrieve:
-        retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
-        if not retriever:
-            raise Exception("Failed to initialize retriever")
-        print("✅ Retriever loaded successfully.")
-    
-    pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
-    if not pipe:
-        raise Exception("Failed to initialize language model pipeline")
-    print("✅ Language model pipeline loaded successfully.")
-
-    file_test = args.input
-    with open(file_test, "r", encoding="utf-8") as f:
-        result_data = json.load(f)
-
-    print("\n" + "=" * 50)
-    print("Starting QA Session")
-    print("=" * 50)
-
+def generate(args, retriever, pipe, result_data):
     prompts = []
     system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. 
     단, 동일한 문장을 절대 반복하지 마시오."""
@@ -178,7 +145,41 @@ def main():
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(json.dumps(result_data, ensure_ascii=False, indent=4))
 
+
+def main():
+    args = parse_arguments()
+    RETRIEVER_NAME = "BAAI/bge-m3"
+    GENERATOR_NAME = args.model_id
+
+    print(f"Current device: {torch.cuda.get_device_name(0)}")
+    print(f"Total VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
+
+    device = torch.device(args.device)
+    torch.cuda.reset_peak_memory_stats(device)
     
+    print("=" * 50)
+    print("Starting Korean Culture QA System")
+    print("=" * 50)
+    retriever = None
+    if args.retrieve:
+        retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        if not retriever:
+            raise Exception("Failed to initialize retriever")
+        print("✅ Retriever loaded successfully.")
+    
+    pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
+    if not pipe:
+        raise Exception("Failed to initialize language model pipeline")
+    print("✅ Language model pipeline loaded successfully.")
+
+    file_test = args.input
+    with open(file_test, "r", encoding="utf-8") as f:
+        result_data = json.load(f)
+
+    print("\n" + "=" * 50)
+    print("Starting QA Session")
+    print("=" * 50)
+    generate(args, retriever, pipe, result_data)
     print("\n" + "=" * 50)
     print("QA Session Completed")
     print("=" * 50)

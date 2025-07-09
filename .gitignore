@@ -1,3 +1,4 @@
 resource/retrieval_docs/chroma_db/*
 resource/retrieval_docs/kowiki_dataset/*
 resource/QA/result.json
+korean_evaluation/

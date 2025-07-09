@@ -67,7 +67,8 @@ def generate_answer(state: GraphState) -> GraphState:
         topic_keyword=state["topic_keyword"],
         context=context,
         question=state["question"],
-        fewshot=True
+        fewshot=True,
+        retrieve=True
     )
 
     messages = [
