@@ -46,6 +46,7 @@ def parse_arguments():
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
     g.add_argument("--batch_size", type=int, default=10, help="Batch size for inference.")
+    g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     return parser.parse_args()
 
 
@@ -106,10 +107,11 @@ def main():
     print("Starting Korean Culture QA System")
     print("=" * 50)
 
-    retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
-    if not retriever:
-        raise Exception("Failed to initialize retriever")
-    print("✅ Retriever loaded successfully.")
+    if args.retrieve:
+        retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        if not retriever:
+            raise Exception("Failed to initialize retriever")
+        print("✅ Retriever loaded successfully.")
     
     pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
     if not pipe:
@@ -128,11 +130,14 @@ def main():
     system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. 
     단, 동일한 문장을 절대 반복하지 마시오."""
     
-    print("Retrieving documents and preparing prompts...")
+    print("Preparing prompts...")
     for item in tqdm.tqdm(result_data):
         question = item["input"]["question"]
-        documents = retriever.invoke(question)
-        context = format_docs(documents)
+        context = ""
+        if args.retrieve:
+            print("Retrieving relevant documents...")
+            documents = retriever.invoke(question)
+            context = format_docs(documents)
         
         user_prompt = make_prompt(
             question_type=item["input"]["question_type"],
@@ -141,7 +146,8 @@ def main():
             topic_keyword=item["input"]["topic_keyword"],
             context=context,
             question=question,
-            fewshot=True
+            fewshot=True,
+            retrieve = args.retrieve
         )
         
         messages = [

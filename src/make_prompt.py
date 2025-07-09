@@ -50,26 +50,40 @@ type_instructions_with_fewshot = {
 
 
 
-def make_prompt(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False) -> str:
+def make_prompt(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False, retrieve: bool = True) -> str:
     if fewshot:
         instruction = type_instructions_with_fewshot.get(question_type, "")
     else:
         instruction = type_instructions.get(question_type, "")
-    template = """{instruction}
+    if retrieve:
+        template = """{instruction}
 
-    [기타 정보]
-    - 카테고리: {category}
-    - 도메인: {domain}
-    - 주제 키워드: {topic_keyword}
+        [기타 정보]
+        - 카테고리: {category}
+        - 도메인: {domain}
+        - 주제 키워드: {topic_keyword}
 
-    [참고문헌]
-    {context}
+        [참고문헌]
+        {context}
 
-    [질문]
-    {question}
+        [질문]
+        {question}
 
-    답변:
-    """
+        답변:
+        """
+    else:
+        template = """{instruction}
+
+        [기타 정보]
+        - 카테고리: {category}
+        - 도메인: {domain}
+        - 주제 키워드: {topic_keyword}
+
+        [질문]
+        {question}
+
+        답변:
+        """
     return template.format(instruction=instruction, category=category, domain=domain, topic_keyword=topic_keyword, context=context, question=question)
     
 
