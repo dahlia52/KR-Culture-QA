@@ -24,8 +24,13 @@ from load_llm import load_llm
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
-QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/sample_qa.json')
-QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result_train.json')
+
+# Create QA directory if it doesn't exist
+qa_dir = os.path.join(current_dir, 'resource/QA')
+os.makedirs(qa_dir, exist_ok=True)
+
+QA_DATASET_PATH = os.path.join(qa_dir, 'sample_qa.json')
+QA_OUTPUT_PATH = os.path.join(qa_dir, 'result_train.json')
 
 # Hyperparameters
 K = 3
@@ -40,15 +45,15 @@ def parse_arguments():
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
-    g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
+    g.add_argument("--batch_size", type=int, default=10, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     return parser.parse_args()
 
-
+cnt = 0
 def generate(args, retriever, pipe, result_data):
     prompts = []
     system_prompt = make_system_prompt()
-    
+    self_reflection_prompt = make_self_reflection()
     print("Preparing prompts...")
     for item in tqdm.tqdm(result_data):
         question = item["input"]["question"]
@@ -66,7 +71,7 @@ def generate(args, retriever, pipe, result_data):
             context=context,
             question=question,
             fewshot=True,
-            retrieve = args.retrieve
+            retrieve=args.retrieve,
         )
         
         messages = [
@@ -81,18 +86,34 @@ def generate(args, retriever, pipe, result_data):
     outputs = pipe(prompts)
 
     print("Processing generated answers...")
+    prompts = []
     for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
+        generated_text = output[0]['generated_text']
+        generated_text.append({"role": "user", "content": self_reflection_prompt})
+        prompts.append(generated_text)
+        
+    outputs = pipe(prompts)
+    
+    for idx, output in enumerate(tqdm.tqdm(outputs)):
         generated_text = output[0]['generated_text']
         answer = generated_text[2]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
+        reflection_answer = generated_text[4]['content']
+        if reflection_answer[0] != "예":
+            result_data[idx]['output'] = {"answer": answer.strip()}
+        else:
+            print("=" * 50)
+            print("예 발생!!!!")
+            cnt += 1
+            print("=" * 50)
+            print(reflection_answer)
+            print("=" * 50)
+            result_data[idx]['output'] = {"answer": ""}
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(json.dumps(result_data, ensure_ascii=False, indent=4))
 
 
 def main():
-    torch.set_float32_matmul_precision('high')
     args = parse_arguments()
     RETRIEVER_NAME = "BAAI/bge-m3"
     GENERATOR_NAME = args.model_id
@@ -129,7 +150,7 @@ def main():
     print("\n" + "=" * 50)
     print("QA Session Completed")
     print("=" * 50)
-
+    print("아니요 발생 횟수: ", cnt)
     torch.cuda.synchronize()
     print(f"최대 VRAM 사용량: {torch.cuda.max_memory_allocated(device) / 1024**3:.2f} GB")
 

@@ -6,27 +6,23 @@ from datetime import timedelta
 from typing import Dict, List
 
 import torch
-import numpy as np
-import evaluate
 from langchain.vectorstores import Chroma
 from datasets import Dataset, DatasetDict
 from peft import get_peft_model, LoraConfig, TaskType
 from transformers import (
     AutoModelForCausalLM,
-    AutoTokenizer,
-    BitsAndBytesConfig,
-    TrainingArguments,
-    EvalPrediction,
+    AutoTokenizer
 )
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 from make_prompt import make_prompt, format_docs
 from retrieve import load_retriever
+from compute_metrics import compute_metrics
 
 # Get the project root directory
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEFAULT_MODEL_ID = "skt/A.X-4.0-Light"
-DEFAULT_TRAIN_DATA_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_train+.json')
+DEFAULT_MODEL_ID = "K-intelligence/Midm-2.0-Base-Instruct"
+DEFAULT_TRAIN_DATA_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total+.json')
 DEFAULT_VALID_DATA_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_dev+.json')
 
 DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model')
@@ -45,10 +41,11 @@ def parse_arguments():
     parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=1, help="Training batch size")
     parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate")
-    parser.add_argument("--device", type=str, default="cuda", help="Device to train on (cuda or cpu)")
+
     parser.add_argument("--evaluation", action="store_true", help="Evaluate validation set")
     parser.add_argument("--retriever", type=str, default=RETRIEVER_NAME, help="Retriever name")
     parser.add_argument("--retrieve", action="store_true", help="Use retrieval-augmented generation")
+    parser.add_argument("--gpu_ids", type=str, default=None, help="Comma-separated list of GPU IDs to use (e.g., '0,1')")
 
     return parser.parse_args()
 
@@ -77,97 +74,39 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=No
             fewshot=False,
             retrieve=retrieve
         )
+        if example['input']['question_type'] == '단답형' and '#' in example['output']['answer']:
+            answer = example['output']['answer'].split('#')[0]
+        else:
+            answer = example['output']['answer']
 
         # Create a single text field for the trainer using the chat template.
-        messages = [
+        prompt_messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
-            {"role": "assistant", "content": example['output']['answer']}
+            {"role": "assistant", "content": answer}
         ]
-        
         # The tokenizer will apply the chat template and add EOS token.
-        full_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
-        return {"text": full_prompt}
+        text = tokenizer.apply_chat_template(
+            prompt_messages, 
+            tokenize=False, 
+            add_generation_prompt=False,
+        )
+        return {"text": text}
+
 
     # Create dataset from the list of dictionaries and then format it
     dataset = Dataset.from_list(raw_data)
     dataset = dataset.map(generate_prompt)
-
-    # The first mapping already created the 'text' field and removed the original columns.
-    # The second call was redundant.
-    # dataset = dataset.map(generate_prompt, remove_columns=['input', 'output'])
     return dataset
-
-
-def compute_metrics(eval_preds: EvalPrediction, eval_dataset: Dataset, tokenizer: AutoTokenizer):
-    # 1. Load metrics
-    accuracy_metric = evaluate.load("accuracy")
-    exact_match_metric = evaluate.load("exact_match")
-    rouge_metric = evaluate.load("rouge")
-    bertscore_metric = evaluate.load("bertscore")
-    bleurt_metric = evaluate.load("bleurt", module_type="metric")
-
-    # 2. Decode predictions and labels
-    predictions, labels = eval_preds
-    if isinstance(predictions, tuple):
-        predictions = predictions[0]
-
-    # Replace -100 (token used for masking) with pad_token_id
-    predictions = np.where(predictions == -100, tokenizer.pad_token_id, predictions)
-    labels = np.where(labels == -100, tokenizer.pad_token_id, labels)
-
-    decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-    # 3. Group by question_type
-    grouped_examples = {
-        '선다형': {'preds': [], 'labels': []},
-        '단답형': {'preds': [], 'labels': []},
-        '서술형': {'preds': [], 'labels': []},
-    }
-
-    for i, item in enumerate(eval_dataset):
-        q_type = item['input']['question_type']
-        if q_type in grouped_examples:
-            grouped_examples[q_type]['preds'].append(decoded_preds[i])
-            grouped_examples[q_type]['labels'].append(decoded_labels[i])
-
-    # 4. Compute metrics for each group
-    results = {}
-    # '선다형': accuracy
-    if grouped_examples['선다형']['preds']:
-        acc_results = accuracy_metric.compute(predictions=grouped_examples['선다형']['preds'], references=grouped_examples['선다형']['labels'])
-        results['accuracy'] = acc_results['accuracy']
-
-    # '단답형': exact_match
-    if grouped_examples['단답형']['preds']:
-        em_results = exact_match_metric.compute(predictions=grouped_examples['단답형']['preds'], references=grouped_examples['단답형']['labels'])
-        results['exact_match'] = em_results['exact_match']
-
-    # '서술형': ROUGE, BERTScore, BLEURT average
-    if grouped_examples['서술형']['preds']:
-        preds = grouped_examples['서술형']['preds']
-        labels = grouped_examples['서술형']['labels']
-        
-        rouge_results = rouge_metric.compute(predictions=preds, references=labels)
-        bertscore_results = bertscore_metric.compute(predictions=preds, references=labels, lang='ko')
-        bleurt_results = bleurt_metric.compute(predictions=preds, references=labels)
-        
-        results['rougeL'] = rouge_results['rougeL']
-        results['bertscore_f1'] = np.mean(bertscore_results['f1'])
-        results['bleurt'] = np.mean(bleurt_results['scores'])
-        
-        # 서술형 평균 점수
-        descriptive_avg = np.mean([results['rougeL'], results['bertscore_f1'], results['bleurt']])
-        results['descriptive_avg_score'] = descriptive_avg
-
-    return results
 
 
 def main():
     total_start_time = time.time()
     
     args = parse_arguments()
+
+    if args.gpu_ids:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_ids
 
     print("=" * 50)
     print("Starting Fine-Tuning")
@@ -183,31 +122,33 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     tokenizer.padding_side = 'left'
     if tokenizer.pad_token is None:
+        print("Pad token is not set. Setting pad token to eos token.")
         tokenizer.pad_token = tokenizer.eos_token
-
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_id,
-        device_map=args.device,
-        torch_dtype=torch.bfloat16
-    )
-    print("✅ Tokenizer and model loaded.")
 
     retriever = None
     if args.retrieve:
         print("\n2. Loading retriever...")
-        retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        retriever = load_retriever(model=RETRIEVER_NAME, device=device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
         if not retriever:
             raise Exception("Failed to initialize retriever")
         print("✅ Retriever loaded successfully.")
 
+
     print("\n3. Loading and preparing dataset...")
     full_train_dataset = load_and_prepare_data(args.train_data_path, tokenizer, retriever, args.retrieve)
     train_dataset = full_train_dataset.map(lambda example: {'text': example['text']}, remove_columns=list(full_train_dataset.column_names))
+    train_dataset = train_dataset.map(lambda examples: tokenizer(examples['text'],
+                                  padding=True, truncation = True, max_length=2048 * 16), 
+                                  batched=True, batch_size=args.batch_size, remove_columns=train_dataset.column_names)
 
     valid_dataset = None
     if args.evaluation:
         full_valid_dataset = load_and_prepare_data(args.valid_data_path, tokenizer, retriever, args.retrieve)
         valid_dataset = full_valid_dataset.map(lambda example: {'text': example['text']}, remove_columns=list(full_valid_dataset.column_names))
+        valid_dataset = valid_dataset.map(lambda examples: tokenizer(examples['text'],
+                                  padding=True, truncation = True, max_length=2048 * 16), 
+                                  batched=True, batch_size=args.batch_size, remove_columns=valid_dataset.column_names)
     else:
         full_valid_dataset = None
 
@@ -215,6 +156,14 @@ def main():
     print(f"Training dataset size: {len(train_dataset)}")
     if args.evaluation:
         print(f"Validation dataset size: {len(valid_dataset)}")
+
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model_id,
+        device_map="auto",
+        torch_dtype=torch.bfloat16
+    )
+    print("✅ Tokenizer and model loaded.")
+
 
     print("\n4. Configuring training...")
     lora_config = LoraConfig(
@@ -234,12 +183,12 @@ def main():
         output_dir=args.output_dir,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
-        #dataset_text_field="text",
+        per_device_eval_batch_size=args.batch_size,
         learning_rate=args.learning_rate,
         logging_dir=f"{args.output_dir}/logs",
         logging_steps=10,
         save_steps=50,
-        eval_strategy="epoch" if args.evaluation else "no",
+        eval_strategy="steps" if args.evaluation else "no",
         save_total_limit=2,
         fp16=True, # Use mixed precision training
         packing=False,  # Must be False when using DataCollatorForCompletionOnlyLM
@@ -248,8 +197,10 @@ def main():
 
     # Use DataCollatorForCompletionOnlyLM to train only on the assistant's response.
     # The response template is the start of the assistant's turn in the ChatML format.
-    response_template = "답변:"
-    data_collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
+    response_template_with_context = "[답변]"
+    response_template_ids = tokenizer.encode(response_template_with_context, add_special_tokens=False)[2:]
+
+    data_collator = DataCollatorForCompletionOnlyLM(response_template_ids, tokenizer=tokenizer, mlm = False)
 
     trainer = SFTTrainer(
         model=model,
@@ -257,9 +208,9 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=valid_dataset,
         data_collator=data_collator,
-        peft_config = lora_config,
+        peft_config=lora_config,
         compute_metrics=compute_metrics_fn,
-        processing_class=tokenizer
+        processing_class=tokenizer,
     )
     
     print("✅ Training configured.")

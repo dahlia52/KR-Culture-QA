@@ -10,6 +10,7 @@ from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
+from peft import PeftModel, PeftConfig
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -18,7 +19,6 @@ from transformers import (
 )
 from make_prompt import *
 from retrieve import load_retriever
-from load_llm import load_llm
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,13 +36,67 @@ def parse_arguments():
     g = parser.add_argument_group("Common Parameter")
     g.add_argument("--input", type=str, default=QA_DATASET_PATH, help="input filename")
     g.add_argument("--output", type=str, default=QA_OUTPUT_PATH, help="output filename")
-    g.add_argument("--model_id", type=str, default="skt/A.X-4.0-Light", help="huggingface model id")
+    g.add_argument("--model_id", type=str, default="skt/A.X-3.1-Light", help="huggingface model id") # skt/A.X-4.0-Light
+    g.add_argument("--tokenizer", type=str, default="skt/A.X-3.1-Light", help="huggingface tokenizer")
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
-    g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
+    g.add_argument("--batch_size", type=int, default=10, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     return parser.parse_args()
+
+
+
+def load_llm(model_id, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None):
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_id if not is_lora else lora_weights)
+    tokenizer.padding_side = 'left'
+    # Set padding token if it's not already set
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    
+    # Load model with or without quantization
+    if quantize:
+        print("Quantizing model")
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype="float16",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4"
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            quantization_config=quantization_config,
+            device_map=device,
+            trust_remote_code=True
+        )
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            device_map=device,
+            trust_remote_code=True
+        )
+    
+    # Load LoRA weights if specified
+    if is_lora and lora_weights:
+        print(f"Loading LoRA weights from {lora_weights}")
+        model = PeftModel.from_pretrained(model, lora_weights)
+        model = model.merge_and_unload()  # Merge LoRA weights into the model
+
+    pipe = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        max_new_tokens=1024,
+        do_sample=True,
+        top_p=0.9,
+        top_k=30,
+        temperature=0.8,
+        batch_size=batch_size,
+        return_full_text=False  # Don't return the input prompt in the output
+    )
+
+    return pipe
 
 
 def generate(args, retriever, pipe, result_data):
@@ -83,16 +137,25 @@ def generate(args, retriever, pipe, result_data):
     print("Processing generated answers...")
     for idx, output in enumerate(tqdm.tqdm(outputs)):
         # The output from the pipeline is a list with a dictionary
-        generated_text = output[0]['generated_text']
-        answer = generated_text[2]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
+        # The generated text is in output[0]['generated_text']
+        # We need to extract just the assistant's response
+        full_response = output[0]['generated_text']
+        
+        # Split the response to get just the assistant's part
+        # Assuming the format is: <assistant>
+        parts = full_response.split('<assistant>\n')
+        if len(parts) > 1:
+            answer = parts[-1].strip()
+        else:
+            answer = full_response.strip()
+        
+        result_data[idx]["output"] = {"answer": answer}
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(json.dumps(result_data, ensure_ascii=False, indent=4))
 
 
 def main():
-    torch.set_float32_matmul_precision('high')
     args = parse_arguments()
     RETRIEVER_NAME = "BAAI/bge-m3"
     GENERATOR_NAME = args.model_id
@@ -106,6 +169,19 @@ def main():
     print("=" * 50)
     print("Starting Korean Culture QA System")
     print("=" * 50)
+    
+    # Check if we're using a fine-tuned model
+    is_lora = os.path.isdir(args.model_id) and 'adapter_config.json' in os.listdir(args.model_id)
+    lora_weights = args.model_id if is_lora else None
+    
+    # If using LoRA, get the base model name from the config
+    if is_lora:
+        print(f"🔍 Detected a fine-tuned LoRA model at: {args.model_id}")
+        config = PeftConfig.from_pretrained(args.model_id)
+        base_model_name = config.base_model_name_or_path
+        print(f"🔧 Loading base model: {base_model_name}")
+        GENERATOR_NAME = base_model_name
+    
     retriever = None
     if args.retrieve:
         retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
@@ -113,7 +189,16 @@ def main():
             raise Exception("Failed to initialize retriever")
         print("✅ Retriever loaded successfully.")
     
-    pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
+    # Load the language model with LoRA weights if applicable
+    pipe = load_llm(
+        model_id=GENERATOR_NAME,
+        device=args.device,
+        quantize=args.quantize,
+        batch_size=args.batch_size,
+        is_lora=is_lora,
+        lora_weights=lora_weights
+    )
+    
     if not pipe:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")

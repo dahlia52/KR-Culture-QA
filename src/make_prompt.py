@@ -49,6 +49,10 @@ type_instructions = {
     }
 
 
+def make_system_prompt():
+    system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다."""
+    return system_prompt
+
 
 def make_prompt(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False, retrieve: bool = True) -> str:
     if fewshot:
@@ -69,7 +73,7 @@ def make_prompt(question_type: str, category: str, domain: str, topic_keyword: s
         [질문]
         {question}
 
-        답변:
+        [답변]
         """
     else:
         template = """{instruction}
@@ -82,10 +86,19 @@ def make_prompt(question_type: str, category: str, domain: str, topic_keyword: s
         [질문]
         {question}
 
-        답변:
+        [답변]
         """
     return template.format(instruction=instruction, category=category, domain=domain, topic_keyword=topic_keyword, context=context, question=question)
-    
+
+
+def make_self_reflection():
+    self_reflection_prompt = """
+        [자기평가]
+        위 질문에 대해 더 나은 답변을 위해 추가 정보가 필요한가요?
+        예/아니오로 답하시오.
+        """
+    return self_reflection_prompt
+
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)

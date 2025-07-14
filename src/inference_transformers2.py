@@ -25,7 +25,7 @@ current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
 QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/sample_qa.json')
-QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result_train.json')
+QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result.json')
 
 # Hyperparameters
 K = 3
@@ -40,7 +40,7 @@ def parse_arguments():
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
-    g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
+    g.add_argument("--batch_size", type=int, default=8, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     return parser.parse_args()
 
@@ -92,7 +92,6 @@ def generate(args, retriever, pipe, result_data):
 
 
 def main():
-    torch.set_float32_matmul_precision('high')
     args = parse_arguments()
     RETRIEVER_NAME = "BAAI/bge-m3"
     GENERATOR_NAME = args.model_id
