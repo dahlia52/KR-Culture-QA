@@ -36,24 +36,27 @@ def parse_arguments():
     g = parser.add_argument_group("Common Parameter")
     g.add_argument("--input", type=str, default=QA_DATASET_PATH, help="input filename")
     g.add_argument("--output", type=str, default=QA_OUTPUT_PATH, help="output filename")
-    g.add_argument("--model_id", type=str, default="skt/A.X-4.0-Light", help="huggingface model id")
+    g.add_argument("--model_id", type=str, default="K-intelligence/Midm-2.0-Base-Instruct", help="huggingface model id")
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
-    g.add_argument("--batch_size", type=int, default=8, help="Batch size for inference.")
+    g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
+    g.add_argument("--retrieve_adaptively", action="store_true", help="Whether to use retrieval-augmented generation")
     return parser.parse_args()
 
 
 def generate(args, retriever, pipe, result_data):
     prompts = []
     system_prompt = make_system_prompt()
+    system_prompt_for_verifier = make_system_prompt_for_verifier()
+    system_prompt_for_feedback = make_system_prompt_with_feedback()
     
     print("Preparing prompts...")
     for item in tqdm.tqdm(result_data):
         question = item["input"]["question"]
         context = ""
-        if args.retrieve:
+        if args.retrieve or args.retrieve_adaptively:
             print("Retrieving relevant documents...")
             documents = retriever.invoke(question)
             context = format_docs(documents)
@@ -66,7 +69,7 @@ def generate(args, retriever, pipe, result_data):
             context=context,
             question=question,
             fewshot=True,
-            retrieve = args.retrieve
+            retrieve = args.retrieve or args.retrieve_adaptively
         )
         
         messages = [
@@ -81,17 +84,53 @@ def generate(args, retriever, pipe, result_data):
     outputs = pipe(prompts)
 
     print("Processing generated answers...")
+    prompts = []
     for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
-        generated_text = output[0]['generated_text']
-        answer = generated_text[2]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
+        instruction = output[0]['generated_text'][1]['content'].split("[지침]\n")[1].split("\n\n")[0]
+        generated_text = output[0]['generated_text'][-1]['content']
+        question = output[0]['generated_text'][1]['content'].split("[질문]\n")[1].split("[답변]")[0]
+        verifier_prompt = make_verifier_prompt(instruction=instruction, question=question, answer=generated_text)
+        messages = [
+            {"role": "system", "content": system_prompt_for_verifier},
+            {"role": "user", "content": verifier_prompt}
+        ]
+        prompts.append(messages)
+        
+    outputs = pipe(prompts)
+    
+    regenerate_idx = []
+    prompts = []
+    for idx, output in enumerate(tqdm.tqdm(outputs)):
+        verifier_answer = output[0]['generated_text'][-1]['content']
+        if verifier_answer[0] == "예":
+            answer = output[0]['generated_text'][-2]['content'].split("[답변]\n")[1].split("이 답변은 질문에 올바르게 대답한 것입니까?\n")[0].replace('\n', '').strip()
+            result_data[idx]['output'] = {"answer": answer}
+        else:
+            regenerate_idx.append(idx)
+            instruction = output[0]['generated_text'][1]['content'].split("[질문]\n")[0].split("\n\n")[0]
+            generated_text = output[0]['generated_text'][-2]['content'].split("[답변]\n")[1].split("이 답변은 질문에 올바르게 대답한 것입니까?\n")[0].replace('\n', '').strip()
+            question = output[0]['generated_text'][1]['content'].split("[질문]\n")[1].split("[답변]")[0]
+            verifier_prompt = make_prompt_with_feedback(instruction=instruction, question=question, answer=generated_text, feedback=verifier_answer[3:])
+            messages = [
+                {"role": "system", "content": system_prompt_for_feedback},
+                {"role": "user", "content": verifier_prompt}
+            ]
+            prompts.append(messages)
 
+    if len(regenerate_idx) > 0:
+        outputs = pipe(prompts)
+        for idx, output in enumerate(tqdm.tqdm(outputs)):
+            answer = output[0]['generated_text'][-1]['content'].split("<answer>")[1].split("</answer>")[0].replace('\n', '').strip()
+            result_data[regenerate_idx[idx]]['output'] = {"answer": answer}
+    
+    print("Number of Regenerated Answers :", len(regenerate_idx))
+    print("Regenerated Answers:", regenerate_idx)
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(json.dumps(result_data, ensure_ascii=False, indent=4))
 
 
 def main():
+    torch.set_float32_matmul_precision('high')
     args = parse_arguments()
     RETRIEVER_NAME = "BAAI/bge-m3"
     GENERATOR_NAME = args.model_id
@@ -111,8 +150,14 @@ def main():
         if not retriever:
             raise Exception("Failed to initialize retriever")
         print("✅ Retriever loaded successfully.")
+
+    if args.retrieve_adaptively:
+        retriever = load_retriever_adaptively(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        if not retriever:
+            raise Exception("Failed to initialize retriever")
+        print("✅ Retriever loaded successfully.")
     
-    pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
+    pipe, tokenizer = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
     if not pipe:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")

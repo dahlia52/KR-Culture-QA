@@ -1,11 +1,18 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+import logging
+import transformers
 
-def load_llm(model_id, device, quantize=False, batch_size=1):
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+def load_llm(model_id, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None):
+    tokenizer = AutoTokenizer.from_pretrained(model_id if not is_lora else lora_weights)
     tokenizer.padding_side = 'left'
-    # Set padding token if it's not already set
+    
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    
+    # Configure logging to suppress token logging
+    logging.getLogger("transformers").setLevel(logging.ERROR)
+    logging.getLogger("tokenizers").setLevel(logging.ERROR)
+    transformers.logging.set_verbosity_error()
     
     if quantize:
         print("Quantizing model")
@@ -18,13 +25,20 @@ def load_llm(model_id, device, quantize=False, batch_size=1):
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
             quantization_config=quantization_config,
-            device_map=device
+            device_map=device,
+            trust_remote_code=True
         )
     else:
         model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            device_map=device
+            device_map=device,
+            trust_remote_code=True
         )
+    
+    if is_lora and lora_weights:
+        print(f"Loading LoRA weights from {lora_weights}")
+        model = PeftModel.from_pretrained(model, lora_weights)
+        model = model.merge_and_unload()
 
     pipe = pipeline(
         "text-generation",
@@ -35,7 +49,8 @@ def load_llm(model_id, device, quantize=False, batch_size=1):
         top_p=0.9,
         top_k=30,
         temperature=0.8,
-        batch_size=batch_size
+        batch_size=batch_size,
+        return_full_text=True,  # Don't return the input prompt in the output
+        eos_token_id=tokenizer.eos_token_id
     )
-
-    return pipe
+    return pipe, tokenizer

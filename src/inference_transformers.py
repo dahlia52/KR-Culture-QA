@@ -17,7 +17,7 @@ from transformers import (
     BitsAndBytesConfig
 )
 from make_prompt import *
-from retrieve import load_retriever
+from retrieve import *
 from load_llm import load_llm
 
 # Get the project root directory (one level up from src)
@@ -28,7 +28,7 @@ QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/sample_qa.json')
 QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result_train.json')
 
 # Hyperparameters
-K = 3
+K = 30
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
@@ -36,12 +36,13 @@ def parse_arguments():
     g = parser.add_argument_group("Common Parameter")
     g.add_argument("--input", type=str, default=QA_DATASET_PATH, help="input filename")
     g.add_argument("--output", type=str, default=QA_OUTPUT_PATH, help="output filename")
-    g.add_argument("--model_id", type=str, default="skt/A.X-4.0-Light", help="huggingface model id")
+    g.add_argument("--model_id", type=str, default="K-intelligence/Midm-2.0-Base-Instruct", help="huggingface model id")
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
     g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
+    g.add_argument("--retrieve_adaptively", action="store_true", help="Whether to use retrieval-augmented generation")
     return parser.parse_args()
 
 
@@ -53,9 +54,10 @@ def generate(args, retriever, pipe, result_data):
     for item in tqdm.tqdm(result_data):
         question = item["input"]["question"]
         context = ""
-        if args.retrieve:
+        if args.retrieve or args.retrieve_adaptively:
             print("Retrieving relevant documents...")
             documents = retriever.invoke(question)
+            print("Number of retrieved documents:", len(documents))
             context = format_docs(documents)
         
         user_prompt = make_prompt(
@@ -66,7 +68,7 @@ def generate(args, retriever, pipe, result_data):
             context=context,
             question=question,
             fewshot=True,
-            retrieve = args.retrieve
+            retrieve = args.retrieve or args.retrieve_adaptively
         )
         
         messages = [
@@ -84,7 +86,7 @@ def generate(args, retriever, pipe, result_data):
     for idx, output in enumerate(tqdm.tqdm(outputs)):
         # The output from the pipeline is a list with a dictionary
         generated_text = output[0]['generated_text']
-        answer = generated_text[2]['content']
+        answer = generated_text[-1]['content']
         result_data[idx]["output"] = {"answer": answer.strip()}
 
     with open(args.output, "w", encoding="utf-8") as f:
@@ -112,8 +114,14 @@ def main():
         if not retriever:
             raise Exception("Failed to initialize retriever")
         print("✅ Retriever loaded successfully.")
+
+    if args.retrieve_adaptively:
+        retriever = load_retriever_adaptively(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        if not retriever:
+            raise Exception("Failed to initialize retriever")
+        print("✅ Retriever loaded successfully.")
     
-    pipe = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
+    pipe, tokenizer = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
     if not pipe:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")

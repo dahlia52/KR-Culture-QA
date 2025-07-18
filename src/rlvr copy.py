@@ -17,6 +17,7 @@ from compute_metrics import compute_metrics
 from make_prompt import *
 from retrieve import load_retriever
 
+
 bleurt = evaluate.load("bleurt", module_type="metric")
 rouge = evaluate.load("rouge")
 bertscore = evaluate.load("bertscore")
@@ -36,7 +37,7 @@ def parse_arguments():
     parser.add_argument("--train_data_path", type=str, default=DEFAULT_TRAIN_DATA_PATH, help="Path to the training data JSON file")
     parser.add_argument("--output_dir", type=str, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--learning_rate", type=float, default=5e-6)
-    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=4)
     parser.add_argument("--retriever", type=str, default=RETRIEVER_NAME, help="Retriever name")
     parser.add_argument("--retrieve", action="store_true", help="Use retrieval-augmented generation")
@@ -154,7 +155,7 @@ def get_correctness_reward(outputs: Dict[str, Any], answer: str) -> float:
     assert len(rewards) == len(outputs)
     return rewards
 
-def get_total_reward(prediction: str, answer: str, question_type: str, **kwargs) -> float:
+def get_total_reward(prediction: str, answer: str, question_type: str) -> float:
     output_dict = {"answer": prediction, "question_type": question_type}
 
     formatting_reward = get_formatting_reward(output_dict)
@@ -219,7 +220,6 @@ def main():
 
     print("\n3. Loading and preparing dataset...")
     full_train_dataset = load_and_prepare_data(args.train_data_path, tokenizer, retriever, args.retrieve)
-    print(full_train_dataset[0])
 
     # def tokenize_function(examples):
     #     return tokenizer(examples['text'], padding=True, truncation=True, max_length=2048)

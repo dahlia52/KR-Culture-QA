@@ -14,7 +14,7 @@ from transformers import (
     AutoTokenizer
 )
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-from make_prompt import make_prompt, format_docs
+from make_prompt import *
 from retrieve import load_retriever
 from compute_metrics import compute_metrics
 
@@ -54,9 +54,7 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=No
         raw_data = json.load(f)
     
     # Assign persona
-    system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 사용자의 질문에 대해 친절하게 답변해주세요. 
-    단, 동일한 문장을 절대 반복하지 마시오."""
-
+    system_prompt = make_system_prompt()
     def generate_prompt(example):
         question = example['input']['question']
         context = ""
@@ -91,6 +89,8 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=No
             tokenize=False, 
             add_generation_prompt=False,
         )
+        if not text.endswith(tokenizer.eos_token):
+            text += tokenizer.eos_token
         return {"text": text}
 
 
