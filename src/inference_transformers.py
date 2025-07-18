@@ -19,6 +19,7 @@ from transformers import (
 from make_prompt import *
 from retrieve import *
 from load_llm import load_llm
+from generators import *
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,54 +44,9 @@ def parse_arguments():
     g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     g.add_argument("--retrieve_adaptively", action="store_true", help="Whether to use retrieval-augmented generation")
+    g.add_argument("--self_reflection", action="store_true", help="Whether to use self-reflection")
+    g.add_argument("--logit", action="store_true", help="Whether to use logit for multiple_choice")
     return parser.parse_args()
-
-
-def generate(args, retriever, pipe, result_data):
-    prompts = []
-    system_prompt = make_system_prompt()
-    
-    print("Preparing prompts...")
-    for item in tqdm.tqdm(result_data):
-        question = item["input"]["question"]
-        context = ""
-        if args.retrieve or args.retrieve_adaptively:
-            print("Retrieving relevant documents...")
-            documents = retriever.invoke(question)
-            print("Number of retrieved documents:", len(documents))
-            context = format_docs(documents)
-        
-        user_prompt = make_prompt(
-            question_type=item["input"]["question_type"],
-            category=item["input"]["category"],
-            domain=item["input"]["domain"],
-            topic_keyword=item["input"]["topic_keyword"],
-            context=context,
-            question=question,
-            fewshot=True,
-            retrieve = args.retrieve or args.retrieve_adaptively
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        # pipeline's tokenizer will apply the chat template
-        prompts.append(messages)
-
-    print("Generating answers in batch...")
-    outputs = pipe(prompts)
-
-    print("Processing generated answers...")
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
-        generated_text = output[0]['generated_text']
-        answer = generated_text[-1]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
-
-    with open(args.output, "w", encoding="utf-8") as f:
-        f.write(json.dumps(result_data, ensure_ascii=False, indent=4))
 
 
 def main():
@@ -133,7 +89,12 @@ def main():
     print("\n" + "=" * 50)
     print("Starting QA Session")
     print("=" * 50)
-    generate(args, retriever, pipe, result_data)
+    if args.self_reflection:
+        generate_for_self_reflection(args, retriever, pipe, result_data)
+    elif args.logit:
+        generate_for_multiple_choice(args, retriever, pipe, result_data)
+    else:
+        generate(args, retriever, pipe, result_data)
     print("\n" + "=" * 50)
     print("QA Session Completed")
     print("=" * 50)

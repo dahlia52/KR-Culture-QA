@@ -2,7 +2,7 @@ type_instructions_with_fewshot = {
         "선다형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"
-            "주어진 보기 중에서 가장 적절한 답을 숫자로만 응답하시오.\n\n"
+            "질문과 선택지를 주의 깊게 읽고, 가장 정확한 답변의 **번호**를 하나만 선택하여 응답해 주십시오. 다른 부가적인 설명 없이 숫자만 간결하게 답변해야 합니다.\n\n"
             "[예시]\n"
             "질문: 다음 한국의 전통 놀이 중 '조선시대'에 행한 놀이는?\n"
             "1) 주사위 놀이\n"
@@ -23,7 +23,7 @@ type_instructions_with_fewshot = {
         "단답형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"
-            "질문에 대한 답을 2단어 이내로 간단히 답하시오.\n\n"
+            "질문에 대한 답을 최대 5단어 이내로 간단히 답하시오.\n\n"
             "[예시]\n"
             "질문: 조선 후기의 실학 사상가로 목민심서를 쓴 인물은?\n"
             "답변: 정약용"
@@ -34,7 +34,7 @@ type_instructions = {
         "선다형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"
-            "주어진 보기 중에서 가장 적절한 답을 숫자로만 응답하시오.\n\n"
+            "질문과 선택지를 주의 깊게 읽고, 가장 정확한 답변의 **번호**를 하나만 선택하여 응답해 주십시오. 다른 부가적인 설명 없이 숫자만 간결하게 답변해야 합니다.\n\n"
         ),
         "서술형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
@@ -44,7 +44,7 @@ type_instructions = {
         "단답형": (
             "[질문]을 잘 읽고 답변을 생성하시오. 문제를 그대로 출력하지 마시오.\n"
             "[지침]\n"
-            "질문에 대한 답을 2단어 이내로 간단히 답하시오.\n\n"
+            "질문에 대한 답을 최대 5단어 이내로 간단히 답하시오.\n\n"
         )
     }
 
@@ -60,6 +60,11 @@ def make_system_prompt_for_verifier():
 
 def make_system_prompt_with_feedback():
     system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 질문, 초안 답변과 피드백이 주어지면, 피드백을 반영해 답변을 재작성하십시오."""
+    return system_prompt
+
+
+def make_system_prompt_for_revision():
+    system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 아래 [질문]에 대해 [초안 답안]을 다듬어서, 완벽한 최종 답변을 만들어 주십시오."""
     return system_prompt
 
 
@@ -142,6 +147,33 @@ def make_prompt_with_feedback(instruction: str, question: str, answer: str, feed
 
 
 def make_prompt_for_reflection(instruction: str, question: str, answer: str):
+    prompt = """{instruction}
+
+    [질문]
+    {question}
+
+    [초안 답변]
+    {answer}
+
+    [자기 성찰]
+    - 질문과 관련된 내용만 답하였는가?
+    - 위 답변의 논리적 일관성을 검토하라.
+    - 질문에 대한 핵심 정보를 모두 다루었는가?
+    - 잘못된 전제나 누락된 정보가 있는가?
+    - 보다 나은 답변을 생성할 수 있는가?
+
+    [최종 답변]은 아래 형식으로 답하시오.
+    <reasoning> 
+    ...
+    </reasoning>
+    <answer>
+    ...
+    </answer>
+    """
+    return prompt.format(instruction=instruction, question=question, answer=answer)
+
+
+def make_prompt_for_revision(instruction: str, question: str, answer: str):
     prompt = """{instruction}
 
     [질문]

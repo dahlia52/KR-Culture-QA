@@ -266,7 +266,7 @@ def main():
         args=grpo_config,
         processing_class=tokenizer,
         model=model,  # Use the model with QLoRA adapters
-        reward_funcs=get_total_reward,
+        reward_funcs=lambda completions, **kwargs: get_total_reward(prediction=completions, answer=kwargs.get('references'), question_type=kwargs.get('question_type')),
         train_dataset=full_train_dataset,
         peft_config=lora_config,
     )
