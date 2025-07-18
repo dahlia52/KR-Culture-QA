@@ -1,8 +1,7 @@
 resource/retrieval_docs/chroma_db/*
 resource/retrieval_docs/kowiki_dataset/*
-resource/QA/result.json
-resource/QA/result_train.json
 korean_evaluation/
 src/memo.py
 models/*
 wandb/*
+run/*
