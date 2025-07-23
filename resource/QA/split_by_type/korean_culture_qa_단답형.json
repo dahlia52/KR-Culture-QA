@@ -1,0 +1,1939 @@
+[
+  {
+    "id": "6",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "금줄",
+      "question": "한국의 금줄은 무엇을 막기 위해 문이나 길 어귀에 건너질러 매나요?"
+    },
+    "output": {
+      "answer": "부정"
+    }
+  },
+  {
+    "id": "13",
+    "input": {
+      "category": "문화 실행",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "상차림",
+      "question": "한국 상차림 시 식기류를 어떻게 배열하는지 왼쪽을 기준으로 순서대로 나열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 젓가락 ㄴ. 밥그릇 ㄷ. 국그릇 ㄹ. 숟가락 "
+    },
+    "output": {
+      "answer": "ㄴ-ㄷ-ㄹ-ㄱ#ㄴ - ㄷ - ㄹ - ㄱ"
+    }
+  },
+  {
+    "id": "14",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "조선후기 실학자(정약용)",
+      "question": "조선 후기의 실학 사상가로 목민심서를 쓴 인물은?"
+    },
+    "output": {
+      "answer": "정약용"
+    }
+  },
+  {
+    "id": "15",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "이태규",
+      "question": "한국에 양자역학을 화학 반응 연구에 도입한 과학자로 이론 화학을 연구했던 과학자는 누구인가요?"
+    },
+    "output": {
+      "answer": "이태규"
+    }
+  },
+  {
+    "id": "17",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "고조선",
+      "question": "한국사에서 처음으로 등장한 국가는 무엇인가요?"
+    },
+    "output": {
+      "answer": "고조선"
+    }
+  },
+  {
+    "id": "22",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "학교급식법",
+      "question": "한국의 학교급식법은 매년 누구에 의해 계획을 수립, 시행해야 하나요?"
+    },
+    "output": {
+      "answer": "교육감"
+    }
+  },
+  {
+    "id": "26",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "초등학교",
+      "question": "한국의 보편적인 취학 시작 연령은? 만 나이로 이야기하세요."
+    },
+    "output": {
+      "answer": "만 6세#만6세#만6살#만 6살#6세#6살#여섯살"
+    }
+  },
+  {
+    "id": "27",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "오세창",
+      "question": "일제강점기에 '근역서휘', '근역인수' 등을 편찬한 서예가는 누구인가요?"
+    },
+    "output": {
+      "answer": "오세창"
+    }
+  },
+  {
+    "id": "30",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "편의점",
+      "question": "24시간 영업하며 생필품과 음식, 의약품 등을 간편하게 구할 수 있는 가게의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "편의점"
+    }
+  },
+  {
+    "id": "32",
+    "input": {
+      "category": "문화 실행",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "백자",
+      "question": "백자 만드는 방법을 순서대로 나열하세요. \\n ㄱ)  점토로 형태를 만든다.      ㄴ) 도자기에 투명한 유약을 입힌다.    ㄷ) 순도 높은 점토를 준비한다.      ㄹ) 1,250℃ 이상의 고온에서 환원번조를 한다."
+    },
+    "output": {
+      "answer": "ㄷ-ㄱ-ㄴ-ㄹ"
+    }
+  },
+  {
+    "id": "35",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "타령",
+      "question": "한국의 타령 중 판소리의 장단은 주로 2가지인데, 하나는 중중모리 장단이고 다른 하나는 무엇인가요?"
+    },
+    "output": {
+      "answer": "자진모리장단#자진모리 장단"
+    }
+  },
+  {
+    "id": "37",
+    "input": {
+      "category": "문화 지식",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "지방세",
+      "question": "한국의 지방세 중 일반재원을 충당하기 위해 걷는 세금을 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "보통세"
+    }
+  },
+  {
+    "id": "43",
+    "input": {
+      "category": "문화 실행",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "식혜",
+      "question": "식혜 만드는 방법을 순서에 맞게 배열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 보온밥솥에 밥과 엿기름물, 설탕을 넣고 보온하기      ㄴ. 식혜물을 센불에 끓이고 거품 걷기      ㄷ. 체에 밭쳐 밥알을 건지고 식혜물 받기       ㄹ. 식혜물을 식혀서 그릇에 담고 밥알과 잣을 띄우기       ㅁ. 냄비에 멥쌀과 물을 붓고 밥 짓기"
+    },
+    "output": {
+      "answer": "ㅁ-ㄱ-ㄷ-ㄴ-ㄹ#ㅁ - ㄱ - ㄷ - ㄴ - ㄹ"
+    }
+  },
+  {
+    "id": "45",
+    "input": {
+      "category": "문화 실행",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "지하철 노선",
+      "question": "서울 지하철 신림선을 서원역에서 샛강 방향으로 탔을 때 지나가는 역을 순서대로 나열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 당곡역   ㄴ. 서울지방병무청역  ㄷ. 대방역   ㄹ. 보라매역 "
+    },
+    "output": {
+      "answer": "ㄱ-ㄹ-ㄴ-ㄷ#ㄱ - ㄹ - ㄴ - ㄷ"
+    }
+  },
+  {
+    "id": "48",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "제사",
+      "question": "한국에서 제사상을 차리는 방법 중 과실의 색깔에 따라 위치를 조정하는 일을 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "홍동백서#홍동 백서"
+    }
+  },
+  {
+    "id": "51",
+    "input": {
+      "category": "문화 관점",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "가면극",
+      "question": "중국의 전통 가면극은 '변검'이라고 부릅니다. 한국의 전통 가면극은 무엇인가요?"
+    },
+    "output": {
+      "answer": "탈춤#탈놀이#탈놀음#가면극#산대놀이#야류#오광대"
+    }
+  },
+  {
+    "id": "53",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "직장생활",
+      "question": "직장이나 모임에서 사람들이 다 같이 모여 친목을 다지기 위해 식사를 하는 것을 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "회식"
+    }
+  },
+  {
+    "id": "56",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "우주비행사",
+      "question": "한국 최초의 우주비행사는 누구인가요?"
+    },
+    "output": {
+      "answer": "이소연"
+    }
+  },
+  {
+    "id": "59",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "윳놀이",
+      "question": "윷놀이에서 4개의 윷 중 2개가 엎어지고 2개가 젖혀진 것은 무엇인가요?"
+    },
+    "output": {
+      "answer": "개"
+    }
+  },
+  {
+    "id": "63",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "행복주택",
+      "question": "한국토지주택공사(LH)에서 젊은 계층을 위해 시중 시세보다 저렴하게 거주할 수 있도록 주거지를 건설하여 임대하여 주는 임대 주택의 이름은 무엇인가요? "
+    },
+    "output": {
+      "answer": "행복주택#행복 주택"
+    }
+  },
+  {
+    "id": "69",
+    "input": {
+      "category": "문화 관점",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "미신",
+      "question": "이탈리아에서 17을 죽음과 관련한 숫자로 여겨 불길하게 여기는 것과 같이 한국에서는 어떤 숫자가 불길한 숫자로 여겨지나요?"
+    },
+    "output": {
+      "answer": "4#사"
+    }
+  },
+  {
+    "id": "74",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "지역",
+      "question": "높은 강설량을 지닌 지역으로 집으로 들어오는 눈을 막기 위해 집 주위에 우데기라는 외벽을 설치하는 특징이 있는 지역은 어디인가요?"
+    },
+    "output": {
+      "answer": "울릉도"
+    }
+  },
+  {
+    "id": "84",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "개인정보보호위원회",
+      "question": "주로 개인정보 침해와 관련하여 감독하고 대응하는 한국의 정부 부처는 어디인가요?"
+    },
+    "output": {
+      "answer": "개인정보보호위원회#개인정보 보호위원회#개인 정보 보호 위원회#개인 정보 보호위원회#개인정보 보호 위원회"
+    }
+  },
+  {
+    "id": "85",
+    "input": {
+      "category": "문화 실행",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "파전과 막걸리",
+      "question": "한국에서는 비가 오면 주로 파전과 같은 전 종류를 즐겨 먹습니다. 그 음식과 곁들여 먹는 술로 무엇이 있나요?"
+    },
+    "output": {
+      "answer": "막걸리"
+    }
+  },
+  {
+    "id": "88",
+    "input": {
+      "category": "문화 관점",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "해몽",
+      "question": "브라질에서는 이빨 빠진 꿈을 꾸면 누군가가 죽는 흉몽이라고 합니다. 그럼 한국에서는 이빨 빠진 꿈은 흉몽인가요 길몽인가요?을 꾸면 무엇이 일어난다고 생각하나요?"
+    },
+    "output": {
+      "answer": "흉몽"
+    }
+  },
+  {
+    "id": "90",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "결혼",
+      "question": "결혼을 초대하기 위해 주변 지인에게 나눠주는 결혼 초대장의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "청첩장"
+    }
+  },
+  {
+    "id": "98",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "기후",
+      "question": "겨울철 한반도 주변 시베리아 고기압의 발달과 쇠퇴로 추위가 심한 날과 덜한 날이 반복되는 현상을 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "삼한사온#삼한 사온"
+    }
+  },
+  {
+    "id": "99",
+    "input": {
+      "category": "문화 관점",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "교통수단",
+      "question": "프랑스 TGV의 기술을 도입하여 제작한 한국의 기차는 무엇인가요?"
+    },
+    "output": {
+      "answer": "KTX#케이티엑스"
+    }
+  },
+  {
+    "id": "100",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "정(情)",
+      "question": "한국인의 정은 공동체 생활 속에서 상호 협력을 통해 강화되었다. 정을 기반으로 하여 여성들에 의해 운영, 관리되는 소규모의 상호 협동체 내지 협업체를 뜻하는 세글자 단어는 무엇인가요?"
+    },
+    "output": {
+      "answer": "품앗이"
+    }
+  },
+  {
+    "id": "107",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "주거 계약",
+      "question": "임대인에게 보증금을 일정 지불하고 계약 기간 동안 집을 임차할 수 있는 한국의 주거 계약 형태를 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "전세"
+    }
+  },
+  {
+    "id": "108",
+    "input": {
+      "category": "문화 실행",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "알뜰폰",
+      "question": "알뜰폰을 셀프로 개통하기 위한 과정을 순서에 맞게 배열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. usim 일련 번호를 통한 셀프 개통 신청  ㄴ. usim 구매  ㄷ. 단말기, 요금제 결정   ㄹ. 본인인증 및 가입신청서 작성  "
+    },
+    "output": {
+      "answer": "ㄷ-ㄴ-ㄹ-ㄱ#ㄷ - ㄴ  -ㄹ - ㄱ"
+    }
+  },
+  {
+    "id": "112",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "국립공원",
+      "question": "강원도 인제, 고성, 양양, 속초에 걸쳐 있으며 한국의 다섯 번째 국립공원으로 지정된 산의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "설악산"
+    }
+  },
+  {
+    "id": "113",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "상감시법",
+      "question": "고려청자의 대표적인 기법 중 하나로, 그릇 표면에 무늬를 새긴 후 다른 색의 흙으로 메워 넣는 기법은 무엇인가요?"
+    },
+    "output": {
+      "answer": "상감기법#상감 기법"
+    }
+  },
+  {
+    "id": "114",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "국립한글박물관",
+      "question": "한글과 한글문화의 가치를 보존, 확산, 재창조하고자 2014년 10월 9일 개관한 곳은 어디인가?"
+    },
+    "output": {
+      "answer": "국립한글박물관#국립 한글 박물관#국립 한글박물관"
+    }
+  },
+  {
+    "id": "118",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "춘향가",
+      "question": "판소리 '춘향가', '심청가', '적벽가' 등을 개작했다고 알려진 조선 후기 인물은 누구인가요?"
+    },
+    "output": {
+      "answer": "신재효"
+    }
+  },
+  {
+    "id": "138",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "기우제",
+      "question": "가뭄이 들었을 때 비가 내리기를 기원하며 국가 단위로 기도를 올리는 의례를 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "기우제"
+    }
+  },
+  {
+    "id": "145",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "대학생활",
+      "question": "대학생들이 생활비를 벌기 위해 과외, 식당일 등 짧은 시간 동안 일을 하고 근로시간에 해당하는 시급을 받는 것을 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "아르바이트#알바"
+    }
+  },
+  {
+    "id": "151",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "팔만대장경",
+      "question": "고려 시대 '팔만대장경'을 보관하고 있는 사찰의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "해인사"
+    }
+  },
+  {
+    "id": "157",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "재외한국문화원",
+      "question": "해외에 한국의 문화적 우수성을 홍보하고 문화 체험활동을 강화하기 위하여 설립된 기관은 무엇인가요?"
+    },
+    "output": {
+      "answer": "재외한국문화원#재외 한국 문화원#재외 한국문화원"
+    }
+  },
+  {
+    "id": "159",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "소개팅",
+      "question": "한국에서 지인의 소개로 조건에 맞는 남녀가 서로 만나는 자리를 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "소개팅"
+    }
+  },
+  {
+    "id": "160",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "씨름",
+      "question": "한국에서 씨름을 하는 방법을 순서대로 나열하세요. \\n ㄱ) 어깨를 맞댄다      ㄴ) 두 사람이 마주 보고 꿇어앉는다      ㄷ) 오른손으로 상대의 허리샅바를 잡는다      ㄹ) 왼손으로 상대 허벅다리샅바를 잡는다     ㅁ) 허리를 펴고 시합을 시작한다"
+    },
+    "output": {
+      "answer": "ㄴ-ㄱ-ㄷ-ㄹ-ㅁ#ㄴ - ㄱ - ㄷ - ㄹ - ㅁ"
+    }
+  },
+  {
+    "id": "161",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "다리 떨기",
+      "question": "한국에서 'o'을/를 떨면 'x'이/가 나간다라는 미신이 있습니다. o와 x에 들어갈 낱말을 이야기하세요."
+    },
+    "output": {
+      "answer": "다리, 복"
+    }
+  },
+  {
+    "id": "170",
+    "input": {
+      "category": "문화 관점",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "국민기초생활보장제도",
+      "question": "미국의 빈곤 가정 임시 재정 지원(Temporary Assistance for Needy Families, TANF)과 유사한 개념으로, 한국에서 시행하고 있는 제도의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "국민기초생활보장제도#국민 기초 생활 보장 제도#국민 기초생활 보장제도#국민기초생활보장제도#기초보장제도#기초 보장 제도"
+    }
+  },
+  {
+    "id": "187",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "을사늑약",
+      "question": "을사오적 5인은 누구인가요? "
+    },
+    "output": {
+      "answer": "박제순, 이지용, 이근택, 이완용, 권중현"
+    }
+  },
+  {
+    "id": "188",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "조선업",
+      "question": "세계 최초로 200번째 LNG 운반선을 인도한 한국의 조선회사 이름은?"
+    },
+    "output": {
+      "answer": "한화오션#한화 오션"
+    }
+  },
+  {
+    "id": "192",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "임용시험",
+      "question": "초등, 중등 교사를 선발하기 위한 국가고사의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "임용시험#임용고사#임용고시#임용 시험#임용 고사#임용 고시"
+    }
+  },
+  {
+    "id": "195",
+    "input": {
+      "category": "문화 실행",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "지하철 일회용카드",
+      "question": "지하철 일회용 교통카드를 사용하기 위한 방법을 순서에 맞게 배열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 카드 보증금 환급받기 ㄴ. 역사 내 발매기에서 목적지 선택 후 금액 지불  ㄷ. 지하철 개찰구에서 태그 후 지하철 이용  ㄹ. 보증금을 내고 발급된 카드 받기"
+    },
+    "output": {
+      "answer": "ㄴ-ㄹ-ㄷ-ㄱ#ㄴ - ㄹ - ㄷ - ㄱ"
+    }
+  },
+  {
+    "id": "196",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "빅스비",
+      "question": "2017년 3월29일 공개된 삼성전자의 갤럭시S8에 탑재된 인공지능(AI) 가상 비서의 이름은?"
+    },
+    "output": {
+      "answer": "빅스비#Bixby"
+    }
+  },
+  {
+    "id": "201",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "흉몽",
+      "question": "한국에서 나쁜 꿈을 꾸었을 때 오히려 좋은 일이 일어날 것이라고 위로하는 사자성어는?"
+    },
+    "output": {
+      "answer": "흉몽대길#흉몽 대길"
+    }
+  },
+  {
+    "id": "205",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "빨리 빨리 문화",
+      "question": "한국인의 정신 세계와 세계관 중 하나로 실용적이고 빠른 것을 원하는 한국인들의 가치관을 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "빨리빨리 문화#빨리빨리문화"
+    }
+  },
+  {
+    "id": "207",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "범패",
+      "question": "한국의 불교 사찰에서 재를 올릴 때 사용하는 의식 음악을 무엇이라고 부르나요?"
+    },
+    "output": {
+      "answer": "범패"
+    }
+  },
+  {
+    "id": "209",
+    "input": {
+      "category": "문화 관점",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "상복",
+      "question": "서양의 장례식에서 입는 상복과 달리 한국에서 전통적으로 입어오던 상복은 무슨 색인가요?"
+    },
+    "output": {
+      "answer": "흰색#하얀색#하양#백색"
+    }
+  },
+  {
+    "id": "211",
+    "input": {
+      "category": "문화 관점",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "해안 지형",
+      "question": "한국의 서남해안과 스페인 북서부의 해안처럼 하천에 의해 침식되어 형성된 해안을 'ooo식 해안'이라고 합니다. 'ooo'에 들어갈 말은 무엇인가요?"
+    },
+    "output": {
+      "answer": "리아스"
+    }
+  },
+  {
+    "id": "214",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "지역별 특산품",
+      "question": "9월-10월 사이에 나며 임금님께 진상했을 정도로 충청남도 공주를 대표하는 특산물은 무엇인가요?"
+    },
+    "output": {
+      "answer": "알밤"
+    }
+  },
+  {
+    "id": "215",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "기후",
+      "question": "우리나라의 봄철에 일시적으로 시베리아 고기압이 강해져 기온이 떨어지는 현상을 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "꽃샘추위#꽃샘 추위"
+    }
+  },
+  {
+    "id": "217",
+    "input": {
+      "category": "문화 관점",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "학벌",
+      "question": "프랑스 고등교육에서 엘리트를 양성하는 그랑제콜과 같이 학벌을 중시하는 한국에서 상위 3개의 학교를 묶어서 일컫는 별칭은 무엇인가요?"
+    },
+    "output": {
+      "answer": "SKY대학#SKY 대학#SKY#스카이대학#스카이 대학#스카이#서연고 "
+    }
+  },
+  {
+    "id": "220",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "미신",
+      "question": "한국인이 좋아하지 않는 숫자는 무엇인가요?"
+    },
+    "output": {
+      "answer": "4"
+    }
+  },
+  {
+    "id": "222",
+    "input": {
+      "category": "문화 관점",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "달 탐사",
+      "question": "미국의 유인 달 착륙선의 이름은 아폴로 11호입니다. 한국의 첫 달 탐사선 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "다누리#KPLO"
+    }
+  },
+  {
+    "id": "224",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "온돌",
+      "question": "과거 우리 선조의 지혜를 엿볼 수 있는 문화로, 아궁이에서 뗀 불의 열기로 바닥에 온기를 더하는 것을 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "온돌"
+    }
+  },
+  {
+    "id": "225",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "미신",
+      "question": "한국에서는 무슨 새가 울면 반가운 손님이 온다고 생각하나요?"
+    },
+    "output": {
+      "answer": "까치"
+    }
+  },
+  {
+    "id": "228",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "눈치",
+      "question": "한국 사회에서 '다른 사람의 기분이나 또는 어떤 주어진 상황을 때에 맞게 빨리 알아차리는 능력, 혹은 그에 대한 눈빛'을 뭐라고 하나요?"
+    },
+    "output": {
+      "answer": "눈치"
+    }
+  },
+  {
+    "id": "231",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "거북선",
+      "question": "고려말 조선 초에 제작된 세계 최초의 철갑전선은 무엇인가요?"
+    },
+    "output": {
+      "answer": "거북선"
+    }
+  },
+  {
+    "id": "233",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "도방",
+      "question": "고려시대 무인집권기 무인집정의 사병집단은?"
+    },
+    "output": {
+      "answer": "도방"
+    }
+  },
+  {
+    "id": "249",
+    "input": {
+      "category": "문화 관점",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "삼권 분립",
+      "question": "한국의 '삼권 분립'과 유사한 성격을 가진 프랑스의 정치이념은 무엇인가요?"
+    },
+    "output": {
+      "answer": "공화주의#공화 주의"
+    }
+  },
+  {
+    "id": "254",
+    "input": {
+      "category": "문화 관점",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "인터넷",
+      "question": "몽골의 경우 국가 코드 최상위 도메인으로 'mn'을 사용합니다. 한국 인터넷 도메인에서는 무엇을 공식적으로 사용하나요?"
+    },
+    "output": {
+      "answer": "kr#.kr#.한국"
+    }
+  },
+  {
+    "id": "255",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "지형",
+      "question": "해안선이 복잡한 리아스 해안과 다도해를 가진 해안은 한국에서 어느 쪽 해안에 위치하고 있는지 모두 말하세요."
+    },
+    "output": {
+      "answer": "서, 남#/남, 서#남해안 서해안#서해안 남해안#서해안, 남해안#남해안, 서해안"
+    }
+  },
+  {
+    "id": "259",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "교통카드",
+      "question": "서울에서 1회 요금 충전을 통해 대중교통을 무제한으로 이용할 수 있는 교통 정기권의 이름은 무엇인가요? "
+    },
+    "output": {
+      "answer": "기후동행카드#기후동행 카드#기후 동행 카드"
+    }
+  },
+  {
+    "id": "262",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "태권도",
+      "question": "한국 고유의 전통 무예를 바탕으로 한 전신 운동으로 신체를 방어하고 호신, 기술을 단련하는 국제 공인 스포츠를 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "태권도"
+    }
+  },
+  {
+    "id": "269",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "미신",
+      "question": "한국에서는 밤에 손발톱을 깎으면 어떤 동물이 먹는다고 생각하나요?"
+    },
+    "output": {
+      "answer": "생쥐"
+    }
+  },
+  {
+    "id": "275",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "지역 축제",
+      "question": "충청남도 보령의 대표적인 축제로 갯벌에서 진흙으로 다양한 체험을 할 수 있는 축제의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "보령 머드 축제#머드축제#머드 축제#보령머드축제#보령 머드축제"
+    }
+  },
+  {
+    "id": "276",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "섬진강",
+      "question": "한국 5대 강 중 하나인 섬진강의 발원지는?"
+    },
+    "output": {
+      "answer": "데미샘"
+    }
+  },
+  {
+    "id": "293",
+    "input": {
+      "category": "문화 관점",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "삼신할머니",
+      "question": "그리스 신화에 등장하는 여신 '헤라'는 출산, 결혼을 관장하는 신입니다. 한국에서 아이와 출산을 관장하는 신은 무엇인가요?"
+    },
+    "output": {
+      "answer": "삼신할머니#삼신할매#삼신#삼신 할머니#삼신 할매"
+    }
+  },
+  {
+    "id": "300",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "전통의상",
+      "question": "상의로 입는 한복의 윗옷을 일컫는 말은 무엇인가요?"
+    },
+    "output": {
+      "answer": "저고리"
+    }
+  },
+  {
+    "id": "308",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "복숭아",
+      "question": "한국 제사상에서 귀신을 쫓는다하여 놓지 않는 과일의 이름은?"
+    },
+    "output": {
+      "answer": "복숭아"
+    }
+  },
+  {
+    "id": "310",
+    "input": {
+      "category": "문화 지식",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "대통령 후보",
+      "question": "한국에서 대통령 후보가 되려면 선거일을 기준으로 며칠 전부터 등록할 수 있나요?"
+    },
+    "output": {
+      "answer": "24일"
+    }
+  },
+  {
+    "id": "311",
+    "input": {
+      "category": "문화 관점",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "12간지",
+      "question": "12간지 중 베트남에서 고양이 띠의 해일 때는 한국은 어떤 동물의 해인가요?"
+    },
+    "output": {
+      "answer": "토끼"
+    }
+  },
+  {
+    "id": "312",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "미투 운동",
+      "question": "한국에서 페미니즘에 대한 관심이 확산되며 2018년부터 한국 사회를 강타한 여성 인권 운동을 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "미투 운동"
+    }
+  },
+  {
+    "id": "313",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "봉숭아 꽃물",
+      "question": "한국에서는 여름이 되면 무엇을 따서 손톱에 물을 들였나요?"
+    },
+    "output": {
+      "answer": "봉숭아 꽃#봉숭아#봉선화#봉선화 꽃"
+    }
+  },
+  {
+    "id": "319",
+    "input": {
+      "category": "문화 실행",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "김장",
+      "question": "김장 절차를 순서에 맞게 배열해 보세요. 배열 시 각 기호는 '-'로 연결합니다. ㄱ. 소금물에 절인 배추를 준비한다 ㄴ. 양념소를 배추에 묻힌 후 겉잎으로 싼다 ㄷ. 마늘, 고춧가루, 무채, 파 등으로 양념소를 만든다 ㄹ. 김치통에 옮겨 담은 후 밀폐하여 보관한다"
+    },
+    "output": {
+      "answer": "ㄱ-ㄷ-ㄴ-ㄹ#ㄱ - ㄴ - ㄷ - ㄹ"
+    }
+  },
+  {
+    "id": "320",
+    "input": {
+      "category": "문화 실행",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "핀테크 유니콘 기업",
+      "question": "한국 핀테크 산업에서 유일한 유니콘 기업으로 자리매김한 기업은 어디인가요? "
+    },
+    "output": {
+      "answer": "토스#toss"
+    }
+  },
+  {
+    "id": "321",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "대통령 임기",
+      "question": "한국의 대통령 임기는 몇 년인가요?"
+    },
+    "output": {
+      "answer": "5년"
+    }
+  },
+  {
+    "id": "323",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "악학궤범",
+      "question": "조선시대의 의궤와 악보를 정리하여 성현 등이 편찬한 악서는 무엇인가요?"
+    },
+    "output": {
+      "answer": "악학궤범"
+    }
+  },
+  {
+    "id": "325",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "향교",
+      "question": "고려와 조선시대의 지방에서 유학을 교육하기 위하여 설립된 관학교육기관은?"
+    },
+    "output": {
+      "answer": "향교"
+    }
+  },
+  {
+    "id": "333",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "리튬",
+      "question": "LG에너지솔루션에서 세계 최초로 특허를 확보한 분야는? "
+    },
+    "output": {
+      "answer": "건식전극#건식 전극"
+    }
+  },
+  {
+    "id": "335",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "승정원",
+      "question": "조선시대 왕명의 출납을 맡아 보았던 국왕의 비서기관은 무엇인가요?"
+    },
+    "output": {
+      "answer": "승정원"
+    }
+  },
+  {
+    "id": "336",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "카이스트",
+      "question": "한국의 연구 중심 과학 기술 대학으로, 국가가 필요로 하는 고급 과학 기술 인력을 양성하고자 설립된 교육과학기술부 산하 과학 기술 특수 대학의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "카이스트#KAIST"
+    }
+  },
+  {
+    "id": "340",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "노동 3권",
+      "question": "한국에서 노동자, 근로자의 생활을 보장하기 위해 헌법에 기술된 세 가지 기본권을 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "단결권#단체교섭권#단체행동권#단체 교섭권#단체 행동권"
+    }
+  },
+  {
+    "id": "341",
+    "input": {
+      "category": "문화 관점",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "노인 일자리 사업",
+      "question": "한국의 '노인 일자리 사업'과 가장 유사한 일본의 노인 일자리 복지 정책은 무엇인가요?"
+    },
+    "output": {
+      "answer": "고령자고용안정법#고령자 고용안정법#고령자 고용 안정법"
+    }
+  },
+  {
+    "id": "346",
+    "input": {
+      "category": "문화 관점",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "판소리",
+      "question": "한국의 판소리와 비슷하게 노래와 연기를 결합한 서양의 공연 예술은 무엇인가요?"
+    },
+    "output": {
+      "answer": "오페라"
+    }
+  },
+  {
+    "id": "347",
+    "input": {
+      "category": "문화 실행",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "닭싸움",
+      "question": "한국에서 닭싸움을 할 때 닭의 어느 부위가 땅에 닿으면 지나요?"
+    },
+    "output": {
+      "answer": "주둥이"
+    }
+  },
+  {
+    "id": "349",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "원전 수출",
+      "question": "우리나라가 2019년에 아랍에미리트로부터 건설을 수주한 원전의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "바카라 원전"
+    }
+  },
+  {
+    "id": "350",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "기후",
+      "question": "한국 여름철 높은 기온으로 저녁 8시부터 다음날 오전 9시까지 최저 기온이 25도 이상인 현상을 무엇이라고 일컫나요?"
+    },
+    "output": {
+      "answer": "열대야 현상#열대야"
+    }
+  },
+  {
+    "id": "351",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "사회적기업",
+      "question": "한국의 기업 중 사회적 목적을 추구하면서 영업 활동을 수행하는 기업을 뭐라고 하나요?"
+    },
+    "output": {
+      "answer": "사회적 기업#사회적기업"
+    }
+  },
+  {
+    "id": "361",
+    "input": {
+      "category": "문화 지식",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "IMF 외환위기",
+      "question": "1990년대 한국의 외환 위기가 일어난 당시의 정부를 일컫는 말로 민간인 출신에 의한 정부를 가리키는 말은 무엇인가요?"
+    },
+    "output": {
+      "answer": "문민정부#문민 정부"
+    }
+  },
+  {
+    "id": "363",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "최승희",
+      "question": "한국에서 최초로 현대무용 기법을 적용하여 공연한 사람은 누구인가요?"
+    },
+    "output": {
+      "answer": "최승희"
+    }
+  },
+  {
+    "id": "370",
+    "input": {
+      "category": "문화 지식",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "광무양전사업",
+      "question": "1899년부터 1903년까지 대한제국 정부가 실시한 근대적 토지조사사업은?"
+    },
+    "output": {
+      "answer": "광무양전사업#광무 양전사업#광무 양전 사업#광무양전 사업"
+    }
+  },
+  {
+    "id": "380",
+    "input": {
+      "category": "문화 관점",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "광종",
+      "question": "고려시대에, 불교에 관심을 가지고 국사, 왕사 제도의 체계를 마련한 왕은 누구인가요?"
+    },
+    "output": {
+      "answer": "광종"
+    }
+  },
+  {
+    "id": "383",
+    "input": {
+      "category": "문화 실행",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "태양광 설치 순서",
+      "question": "한국에너지공단에서 태양광 설치 사업을 받기 위한 과정을 절차에 맞게 배열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 자부담금 예치 ㄴ. 신재생에너지 설비 종류 선택 ㄷ. 신재생에너지센터에 사업신청서 제출 ㄹ. 참여시공기업 결정 및 계약"
+    },
+    "output": {
+      "answer": "ㄴ-ㄹ-ㄷ-ㄱ#ㄴ - ㄹ - ㄷ - ㄱ"
+    }
+  },
+  {
+    "id": "385",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "정조대왕 능행차",
+      "question": "조선의 제22대 왕인 정조가 어머니 혜경궁 홍씨의 회갑을 기념하기 위해 을묘년에 진행한 대규모 행차로 경기도 수원에서 재현해 오고 있는 행차의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "정조대왕 능행차#정조대왕능행차#정조 대왕 능행차"
+    }
+  },
+  {
+    "id": "403",
+    "input": {
+      "category": "문화 관점",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "시험 미신",
+      "question": "베트남에서는 시험 전 땅콩이나 계란을 먹지 않습니다. 한국에서는 시험 전 무엇을 먹지 않나요?"
+    },
+    "output": {
+      "answer": "미역국"
+    }
+  },
+  {
+    "id": "405",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "5G",
+      "question": "세계 최초로 5G 네트워크 상용화를 시작한 국가는 어디인가요?"
+    },
+    "output": {
+      "answer": "대한민국"
+    }
+  },
+  {
+    "id": "407",
+    "input": {
+      "category": "문화 관점",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "벌초",
+      "question": "중국에서는 청명절에, 일본의 오봉절에 조상의 묘를 돌보는 일을 합니다. 이와 비슷하게 한국에서도 설이나 추석과 같은 명절에 조상의 묘를 돌보곤 합니다. 한국에서 조상의 묘를 돌볼 때 자라난 풀을 베고 주변을 정비하는 일을 두 글자로 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "벌초"
+    }
+  },
+  {
+    "id": "408",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "건강보험",
+      "question": "한국의 외국인 유학생이 국민건강보험공단에 지역 가입자 자격을 취득하기 위해 국내에 거주해야 하는 기간은 얼마나 되나요?"
+    },
+    "output": {
+      "answer": "6개월#6 개월#육개월#육 개월#반년#반 년"
+    }
+  },
+  {
+    "id": "412",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "ebs",
+      "question": "한국교육방송공사의 교육 전문 방송국이자 주로 지상파 방송, 인터넷 방송 등을 통한 다양한 교육 서비스를 시청자들에게 제공하는 일을 하는 이 기관의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "EBS#한국교육방송공사"
+    }
+  },
+  {
+    "id": "413",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "정약용",
+      "question": "조선 후기 실학을 주장하며 농업 중심의 개혁을 주장한 인물로, \"경세유표\"를 쓴 인물은 누구인가요?"
+    },
+    "output": {
+      "answer": "정약용"
+    }
+  },
+  {
+    "id": "418",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "한국 미술사(신윤복)",
+      "question": "조선 시대 '미인도'로 유명한 화가는 누구인가요?"
+    },
+    "output": {
+      "answer": "신윤복"
+    }
+  },
+  {
+    "id": "423",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "천도제",
+      "question": "한국의 사십구재와 같이 죽은 사람의 영혼이 좋은 곳에 태어나도록 기도하는 의례나 제사를 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "천도재"
+    }
+  },
+  {
+    "id": "424",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "종묘제례악",
+      "question": "종묘의 본전과 영녕전 제향 때 연주되는 음악은 무엇인가요?"
+    },
+    "output": {
+      "answer": "종묘제례악#종묘 제례악"
+    }
+  },
+  {
+    "id": "429",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "DMZ",
+      "question": "북한과 우리나라의 무력충돌을 막기 위해 '한국휴전협정'에 의해 설치된 남북 각각 2km씩 설정된 지역의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "비무장지대(DMZ)#DMZ#디엠지#비무장지대#비무장 지대"
+    }
+  },
+  {
+    "id": "436",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "독도",
+      "question": "한국의 가장 동쪽에 위치한 영토이며 화산섬으로 이루어져 있고 주변에 조경 수역을 형성하고 있는 섬의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "독도"
+    }
+  },
+  {
+    "id": "438",
+    "input": {
+      "category": "문화 지식",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "청약 통장",
+      "question": "국민 주택 또는 민영 주택을 분양받기 위해 필요한 자금을 저축하여 훗날 분양금을 지불하는 데 도움이 되는 저축 통장의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "청약 통장#청약통장"
+    }
+  },
+  {
+    "id": "450",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "한국교육과정평가원",
+      "question": "수능 출제 및 기초 연구를 수행하며 한국의 교육과정 전반에 대한 연구를 진행하는 국가 기관의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "한국교육과정평가원#한국 교육 과정 평가원#KICE#kice"
+    }
+  },
+  {
+    "id": "453",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "다문화 지원",
+      "question": "다문화가족에게 필요한 정보를 제공하기 위해 여성가족부에서 만든 다문화 가족 지원 포털의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "다누리"
+    }
+  },
+  {
+    "id": "454",
+    "input": {
+      "category": "문화 관점",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "관용표현",
+      "question": "일본어 관용표현 '얼굴이 넓다'라는 의미와 동일한 한국어 표현에는 어떤 신체 부위가 등장하나요?"
+    },
+    "output": {
+      "answer": "발"
+    }
+  },
+  {
+    "id": "458",
+    "input": {
+      "category": "문화 실행",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "복조리",
+      "question": "한국에서는 o와 x을 위해 복조리를 문과 벽에 걸어둡니다. o와 x에 들어갈 단어는 무엇인가요?"
+    },
+    "output": {
+      "answer": "장수, 재복#재복, 장수"
+    }
+  },
+  {
+    "id": "461",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "메모리반도체",
+      "question": "정보 저장 용도로 사용되는 반도체로, 삼성을 중심으로 우리나라가 세계적으로 인정받는 반도체의 종류는 무엇인가요? "
+    },
+    "output": {
+      "answer": "메모리 반도체#메모리반도체"
+    }
+  },
+  {
+    "id": "467",
+    "input": {
+      "category": "문화 실행",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "운전면허",
+      "question": "면허 시험 순서를 올바르게 배열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 기능시험 ㄴ. 신체검사 ㄷ. 연습면허발급 ㄹ. 도로주행시험 ㅁ)운전면허증발급"
+    },
+    "output": {
+      "answer": "ㄴ-ㄱ-ㄷ-ㄹ-ㅁ#ㄴ - ㄱ - ㄷ - ㄹ - ㅁ"
+    }
+  },
+  {
+    "id": "473",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "기념일",
+      "question": "60번째 생일을 의미하는 말로, 가족끼리 기념하는 잔치를 하기도 하고 회갑이라고도 불리는 날의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "환갑"
+    }
+  },
+  {
+    "id": "474",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "아니리",
+      "question": "판소리에서 창자가 소리를 하다가 한 대목에서 다른 대목으로 넘어가기 전에 자유리듬으로 사설을 엮어나가는 행위를 무엇이라고 하나요?"
+    },
+    "output": {
+      "answer": "아니리"
+    }
+  },
+  {
+    "id": "478",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "신도시",
+      "question": "충청남도 홍성과 예산에 개발된 신도시로 지역의 균형적 발전을 이루기 위해 충남의 행정기관이 새롭게 이전한 신도시의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "내포 신도시#내포신도시#내포"
+    }
+  },
+  {
+    "id": "479",
+    "input": {
+      "category": "문화 지식",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "비유 표현",
+      "question": "한국에서는 교활하고 약삭빠른 사람을 어떤 동물에 비유하나요?"
+    },
+    "output": {
+      "answer": "여우"
+    }
+  },
+  {
+    "id": "482",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "서울아트시네마",
+      "question": "2005년에 개관하였으며, 교육 및 문화적 목적으로 영화를 상영하는 서울의 유일한 비영리 민간 시네마테크 전용관은 어디인가요?"
+    },
+    "output": {
+      "answer": "서울아트시네마#서울 아트 시네마#서울아트 시네마#서울 아트시네마"
+    }
+  },
+  {
+    "id": "483",
+    "input": {
+      "category": "문화 관점",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "명절 음식",
+      "question": "중국의 춘절에는 교자라는 물만두를 먹거나 떡과 같은 연고 등 지역마다 특별한 음식을 먹습니다. 한국에서는 설날에 연고와 같은 떡 음식을 먹습니다. 이 음식은 무엇인가요?"
+    },
+    "output": {
+      "answer": "떡국"
+    }
+  },
+  {
+    "id": "492",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "호조",
+      "question": "조선 후기 통리기무아문에서 내지를 왕래하는 외국인에게 발급하던 여행허가증은?"
+    },
+    "output": {
+      "answer": "호조"
+    }
+  },
+  {
+    "id": "500",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "중학교",
+      "question": "한국 중학교의 수업 시간은 몇 분인가요?"
+    },
+    "output": {
+      "answer": "45분"
+    }
+  },
+  {
+    "id": "502",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "절기",
+      "question": "한국의 24절기는 무엇을 나누어 나타낸 것인가요?"
+    },
+    "output": {
+      "answer": "계절"
+    }
+  },
+  {
+    "id": "504",
+    "input": {
+      "category": "문화 실행",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "하이패스",
+      "question": "고속도로 톨게이트에서 통행 요금을 자동으로 지불할 수 있는 카드의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "하이패스#하이 패스#Hipass#hipass#hi pass#Hi pass"
+    }
+  },
+  {
+    "id": "514",
+    "input": {
+      "category": "문화 관점",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "메신저앱",
+      "question": "한국의 '카카오톡'과 유사하게 중국에서 가장 많이 사용하는 메신저 애플리케이션은 무엇인가요?"
+    },
+    "output": {
+      "answer": "위챗#WeChat#wechat"
+    }
+  },
+  {
+    "id": "515",
+    "input": {
+      "category": "문화 관점",
+      "domain": "일상생활",
+      "question_type": "단답형",
+      "topic_keyword": "만 나이",
+      "question": "전세계에서 실시하는 나이 계산법에 발맞춰 우리나라에서 최근 공식적으로 사용하도록 장려한 나이는 무엇인가요?"
+    },
+    "output": {
+      "answer": "만 나이#만"
+    }
+  },
+  {
+    "id": "519",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "의열단",
+      "question": "1919년 11월 만주에서 조직되었으며 과격하고 급진적인 폭력투쟁을 목적으로 했던 독립운동 단체는?"
+    },
+    "output": {
+      "answer": "의열단"
+    }
+  },
+  {
+    "id": "524",
+    "input": {
+      "category": "문화 실행",
+      "domain": "풍습/문화유산",
+      "question_type": "단답형",
+      "topic_keyword": "제사",
+      "question": "한국의 제사 절차를 순서에 맞게 배열해 보세요. 배열 시 각 기호는 '-'로 연결합니다. ㄱ. 조상께 절을 한다 ㄴ. 지방과 축문을 불사른다 ㄷ. 향을 피운다 ㄹ. 제수를 나누어 먹는다"
+    },
+    "output": {
+      "answer": "ㄷ-ㄱ-ㄴ-ㄹ#ㄷ - ㄱ - ㄴ - ㄹ"
+    }
+  },
+  {
+    "id": "525",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "직지심체요절",
+      "question": "현존하는 세계 최고의 금속활자본으로 고려에서 발명한 금속을 이용한 인쇄술로 만든 책은?"
+    },
+    "output": {
+      "answer": "직지심체요절#직지 심체요절#직지심체 요절#직지 심체 요절"
+    }
+  },
+  {
+    "id": "528",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "서원",
+      "question": "조선 중기 이후 학문연구 등을 위해 사림에 설립된 사설 교육기관은?"
+    },
+    "output": {
+      "answer": "서원"
+    }
+  },
+  {
+    "id": "531",
+    "input": {
+      "category": "문화 지식",
+      "domain": "역사",
+      "question_type": "단답형",
+      "topic_keyword": "정동행성",
+      "question": "고려 후기 몽골 제국에서 고려에 설치한 지방 행정 기구는?"
+    },
+    "output": {
+      "answer": "정동행성"
+    }
+  },
+  {
+    "id": "532",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "단답형",
+      "topic_keyword": "유치진",
+      "question": "현대극장의 극단을 통해 <흑룡강>, <북진대>, <대추나무> 등 친일 선전 희곡을 두루 상연한 작가는 누구인가요? "
+    },
+    "output": {
+      "answer": "유치진"
+    }
+  },
+  {
+    "id": "536",
+    "input": {
+      "category": "문화 관점",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "서울의 봄",
+      "question": "체코의 프라하의 봄과 같이 한국에서 일어난 민주화 운동을 무엇이라 하나요?"
+    },
+    "output": {
+      "answer": "서울의 봄"
+    }
+  },
+  {
+    "id": "537",
+    "input": {
+      "category": "문화 관점",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "강",
+      "question": "아래에 상응하는 한국의 강 이름을 답하세요. 프랑스-센강, 영국-템스강, 태국-차오프라야강, 한국 - ( )"
+    },
+    "output": {
+      "answer": "한강"
+    }
+  },
+  {
+    "id": "541",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "녹색성장",
+      "question": "한국의 환경정책 중 하나로, 에너지와 자원의 효율적 사용과 청정에너지의 연구개발로 환경과 경제에 도움이 되도록 하는 국가비전은 무엇인가요?"
+    },
+    "output": {
+      "answer": "녹색성장#녹색 성장"
+    }
+  },
+  {
+    "id": "544",
+    "input": {
+      "category": "문화 실행",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "공항 직통열차",
+      "question": "인천공항 직통열차를 운행하는 기관의 이름은 무엇인가요?"
+    },
+    "output": {
+      "answer": "A'REX(인천국제공항철도)#AREX#인천국제공항철도#A'REX#인천 국제공항 철도#인천 국제 공항 철도#인천국제공항 철도"
+    }
+  },
+  {
+    "id": "545",
+    "input": {
+      "category": "문화 실행",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "전기차",
+      "question": "한국의 주택이나 아파트에서는 주로 어떤 전기차 충전기를 이용할 수 있나요?"
+    },
+    "output": {
+      "answer": "완속 충전기#완속충전기"
+    }
+  },
+  {
+    "id": "546",
+    "input": {
+      "category": "문화 관점",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "아동수당",
+      "question": "일본과 한국은 육아 지원 제도 중 하나로 아동수당을 지급합니다. 한국은 일반적으로 만 8세 미만 아동이 있는 가구에 월 얼마씩 지급하나요?"
+    },
+    "output": {
+      "answer": "10만 원#10만원#100,000원#십만원#십 만원"
+    }
+  },
+  {
+    "id": "549",
+    "input": {
+      "category": "문화 관점",
+      "domain": "정치/경제",
+      "question_type": "단답형",
+      "topic_keyword": "복수정당제",
+      "question": "미국의 정당은 양당제의 양상을 띄고있는 반면 한국의 정당은 원칙적으로 어떤 양상으로 구성되어 있나요?"
+    },
+    "output": {
+      "answer": "복수정당제#복수 정당제"
+    }
+  },
+  {
+    "id": "550",
+    "input": {
+      "category": "문화 관점",
+      "domain": "과학기술",
+      "question_type": "단답형",
+      "topic_keyword": "정보통신 표준화",
+      "question": "대만의 TAICS처럼 정보통신 표준화 기준을 수립하는 한국의 기관은 어디인가요?"
+    },
+    "output": {
+      "answer": "tta#TTA#한국정보통신기술협회#한국 정보통신 기술협회#한국 정보 통신 기술협회#한국 정보통신 기술 협회#한국 정보 통신 기술 협회#한국 정보통신기술 협회"
+    }
+  },
+  {
+    "id": "553",
+    "input": {
+      "category": "문화 지식",
+      "domain": "교육",
+      "question_type": "단답형",
+      "topic_keyword": "덕업상권",
+      "question": "조선 시대 향약의 네 가지 덕목 중 교육과 관련된 것은 무엇인가요?"
+    },
+    "output": {
+      "answer": "덕업상권"
+    }
+  },
+  {
+    "id": "558",
+    "input": {
+      "category": "문화 지식",
+      "domain": "사회",
+      "question_type": "단답형",
+      "topic_keyword": "그린벨트",
+      "question": "2026년 상반기 그린벨트가 풀리는 비수도권 전략사업 지역 중 U-밸리 일반산단이 들어오는 지역의 이름은?"
+    },
+    "output": {
+      "answer": "울주군#울주#울산 울주군#울산광역시 울주군"
+    }
+  },
+  {
+    "id": "572",
+    "input": {
+      "category": "문화 지식",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "대중교통",
+      "question": "2024년 하반기부터 시작된 한국의 대중교통비 환급 지원 사업의 이름은?"
+    },
+    "output": {
+      "answer": "K-패스#K 패스#K패스#k-패스#k 패스#k패스#케이패스#케이 패스"
+    }
+  },
+  {
+    "id": "578",
+    "input": {
+      "category": "문화 지식",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "남아선호사상",
+      "question": "한국의 남아선호사상은 어떤 종교나 사상을 바탕으로 확산, 강화되었나요?"
+    },
+    "output": {
+      "answer": "유교"
+    }
+  },
+  {
+    "id": "585",
+    "input": {
+      "category": "문화 관점",
+      "domain": "가치관",
+      "question_type": "단답형",
+      "topic_keyword": "이사 미신",
+      "question": "러시아에서는 이사한 집에 고양이가 드나들면 복이 온다고 합니다. 한국에서는 복을 위해 이사할 때 무엇을 먼저 넣어두면 복이 온다고 생각하나요?"
+    },
+    "output": {
+      "answer": "밥솥"
+    }
+  },
+  {
+    "id": "588",
+    "input": {
+      "category": "문화 실행",
+      "domain": "지리",
+      "question_type": "단답형",
+      "topic_keyword": "기후동행카드",
+      "question": "기후동행카드를 실물로 사용하기 위한 방법을 순서에 맞게 배열하세요. 배열 시 각 기호는 '-'로 연결합니다. \\n ㄱ. 무인 충전기에서 금액 충전 ㄴ. 기후동행카드 구매  ㄷ. 서울교통공사 고객안전실 방문  ㄹ. '티머니카드&페이' 홈페이지 등록"
+    },
+    "output": {
+      "answer": "ㄷ-ㄴ-ㄹ-ㄱ#ㄷ - ㄴ - ㄹ - ㄱ"
+    }
+  }
+]

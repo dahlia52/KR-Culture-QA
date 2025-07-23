@@ -1,4 +1,5 @@
 import os
+import gc
 import argparse
 import json
 import tqdm
@@ -17,19 +18,22 @@ from transformers import (
     BitsAndBytesConfig
 )
 from make_prompt import *
-from retrieve import load_retriever
+from retrieve import *
 from load import *
+from generators import *
+import logging
+from datetime import datetime
 from peft import PeftModel, PeftConfig
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
-QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/sample_qa.json')
-QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result_train.json')
-DEFAULT_MODEL_ID = "K-intelligence/Midm-2.0-Base-Instruct"
+QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_test+.json')
+QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_test+_context.json')
 
-# Hyperparameters
+log_filename = f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+logging.basicConfig(filename=log_filename, level=logging.INFO)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
@@ -37,69 +41,20 @@ def parse_arguments():
     g = parser.add_argument_group("Common Parameter")
     g.add_argument("--input", type=str, default=QA_DATASET_PATH, help="input filename")
     g.add_argument("--output", type=str, default=QA_OUTPUT_PATH, help="output filename")
-    g.add_argument("--model_id", type=str, default=DEFAULT_MODEL_ID, help="huggingface model id")
+    g.add_argument("--model_id", type=str, default="K-intelligence/Midm-2.0-Base-Instruct", help="huggingface model id")
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
-    g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
+    g.add_argument("--batch_size", type=int, default=2, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     g.add_argument("--retrieve_adaptively", action="store_true", help="Whether to use retrieval-augmented generation")
-    g.add_argument("--self_reflection", action="store_true", help="Whether to use self-reflection")
-    g.add_argument("--logit", action="store_true", help="Whether to use logit for multiple_choice")
-    g.add_argument("--verify", action="store_true", help="Whether to use verifier")
-    g.add_argument("--retrieval_queries", action="store_true", help="Whether to use retrieval queries")
     g.add_argument("--k", type=int, default=2, help="Number of retrieved documents.")
     return parser.parse_args()
 
 
-def generate(args, retriever, pipe, result_data):
-    prompts = []
-    system_prompt = make_system_prompt()
-    
-    print("Preparing prompts...")
-    for item in tqdm.tqdm(result_data):
-        question = item["input"]["question"]
-        topic_keyword = item["input"]["topic_keyword"]
-        context = ""
-        if args.retrieve or args.retrieve_adaptively:
-            context = retrieve_documents(topic_keyword, question, retriever)
-        
-        user_prompt = make_prompt(
-            question_type=item["input"]["question_type"],
-            category=item["input"]["category"],
-            domain=item["input"]["domain"],
-            topic_keyword=topic_keyword,
-            context=context,
-            question=question,
-            fewshot=True,
-            retrieve = args.retrieve or args.retrieve_adaptively
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        # pipeline's tokenizer will apply the chat template
-        prompts.append(messages)
-
-    print("Generating answers in batch...")
-    outputs = pipe(prompts)
-
-    print("Processing generated answers...")
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
-        print("=" * 50)
-        print("Output: ", output)
-        print("=" * 50)
-        answer = output[0]['generated_text']
-        print("Answer: ", answer)
-        result_data[idx]["output"] = {"answer": answer.strip()}
-
-    save_dataset(result_data, args.output)
-
-
 def main():
+    gc.collect()                         
+    torch.cuda.empty_cache()
     torch.set_float32_matmul_precision('high')
     args = parse_arguments()
     RETRIEVER_NAME = "BAAI/bge-m3"
@@ -114,7 +69,6 @@ def main():
     print("=" * 50)
     print("Starting Korean Culture QA System")
     print("=" * 50)
-
     retriever = None
     if args.retrieve:
         retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=args.k)
@@ -148,22 +102,14 @@ def main():
     print("\n" + "=" * 50)
     print("Starting QA Session")
     print("=" * 50)
-    if args.self_reflection:
-        generate_for_self_reflection(args, retriever, pipe, result_data)
-    elif args.logit:
-        generate_for_multiple_choice(args, retriever, pipe, result_data)
-    elif args.verify:
-        generate_with_verifier(args, retriever, pipe, result_data)
-    elif args.retrieval_queries:
-        generate_with_retrieval_queries(args, retriever, pipe, result_data)
-    else:
-        generate(args, retriever, pipe, result_data)
+
+    verify_context(args, retriever, pipe, result_data)
     print("\n" + "=" * 50)
     print("QA Session Completed")
     print("=" * 50)
 
     torch.cuda.synchronize()
-    print(f"VRAM Usage: {torch.cuda.max_memory_allocated(device) / 1024**3:.2f} GB")
+    print(f"최대 VRAM 사용량: {torch.cuda.max_memory_allocated(device) / 1024**3:.2f} GB")
 
 
 if __name__ == '__main__':

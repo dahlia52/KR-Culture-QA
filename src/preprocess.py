@@ -14,24 +14,39 @@ def preprocess_data(input_path, output_path):
 
     processed_data = []
     for item in data:
-        if item['output']['answer'][0] == '>':
-            item['output']['answer'] = item['output']['answer'][1:]
-        question_type = item['input']['question_type']
-        answer = item['output']['answer']
-        if '답변:' in answer:
-            answer = answer.split('답변:')[1].strip()
+        if 'ass' in item['output']['answer']:
+            item['output']['answer'] = item['output']['answer'].split('ass')[0].strip()
 
-        if question_type == '선다형':
-            processed_answer = answer.strip()[0]
-            assert processed_answer in ['1', '2', '3', '4', '5'], f"Invalid multiple choice answer: {answer}"
-            item['output']['answer'] = processed_answer
-                
-        elif question_type == '단답형':
-            if '또는' in answer:
-                item['output']['answer'] = answer.split('또는')[0].strip()
-                
-        elif question_type == '서술형':
-            item['output']['answer'] = answer.replace('\n\n', ' ').replace('\n', ' ').strip()
+        if '\u0000' in item['output']['answer']:
+            item['output']['answer'] = item['output']['answer'].split('\u0000')[0].strip()
+
+        if '(dAtA' in item['output']['answer']:
+            item['output']['answer'] = item['output']['answer'].split('(dAtA')[0].strip()
+
+        try:
+            if item['output']['answer'][0] == '>':
+                item['output']['answer'] = item['output']['answer'][1:]
+            question_type = item['input']['question_type']
+            answer = item['output']['answer']
+            if '답변:' in answer:
+                answer = answer.split('답변:')[1].strip()
+
+            if question_type == '선다형':
+                processed_answer = answer.strip()[0]
+                assert processed_answer in ['1', '2', '3', '4', '5'], f"Invalid multiple choice answer: {answer}"
+                item['output']['answer'] = processed_answer
+                    
+            elif question_type == '단답형':
+                if '또는' in answer:
+                    item['output']['answer'] = answer.split('또는')[0].strip()
+                if '\n' in answer:
+                    item['output']['answer'] = answer.split('\n')[0].strip()
+                    
+            elif question_type == '서술형':
+                item['output']['answer'] = answer.replace('\n\n', ' ').replace('\n', ' ').strip()
+        
+        except:
+            pass
         processed_data.append(item)
 
     with open(output_path, 'w', encoding='utf-8') as f:
@@ -43,7 +58,7 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     
-    input_file = os.path.join(project_root, 'resource', 'QA', 'result_train.json')
-    output_file = os.path.join(project_root, 'resource', 'QA', 'result_train_preprocessed.json')
+    input_file = os.path.join(project_root, 'resource', 'QA', 'result_verified_context.json')
+    output_file = os.path.join(project_root, 'resource', 'QA', 'result_verified_context_preprocessed.json')
     
     preprocess_data(input_file, output_file)

@@ -1,4 +1,5 @@
 import os
+import gc
 import argparse
 import json
 import tqdm
@@ -18,18 +19,21 @@ from transformers import (
 )
 from make_prompt import *
 from retrieve import *
-from load_llm import load_llm
+from load import *
 from generators import *
+import logging
+from datetime import datetime
+from peft import PeftModel, PeftConfig
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
-QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/sample_qa.json')
-QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result_train.json')
+QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_test+.json')
+QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result.json')
 
-# Hyperparameters
-K = 30
+log_filename = f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+logging.basicConfig(filename=log_filename, level=logging.INFO)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
@@ -41,19 +45,26 @@ def parse_arguments():
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--use_auth_token", type=str, help="Hugging Face token for accessing gated models")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
-    g.add_argument("--batch_size", type=int, default=4, help="Batch size for inference.")
+    g.add_argument("--batch_size", type=int, default=2, help="Batch size for inference.")
     g.add_argument("--retrieve", action="store_true", help="Whether to use retrieval-augmented generation")
     g.add_argument("--retrieve_adaptively", action="store_true", help="Whether to use retrieval-augmented generation")
     g.add_argument("--self_reflection", action="store_true", help="Whether to use self-reflection")
     g.add_argument("--logit", action="store_true", help="Whether to use logit for multiple_choice")
+    g.add_argument("--verify", action="store_true", help="Whether to use verifier")
+    g.add_argument("--retrieval_queries", action="store_true", help="Whether to use retrieval queries")
+    g.add_argument("--k", type=int, default=2, help="Number of retrieved documents.")
+    g.add_argument("--verified_context", action="store_true", help="Whether to use verified context")
     return parser.parse_args()
 
 
 def main():
+    gc.collect()                         
+    torch.cuda.empty_cache()
     torch.set_float32_matmul_precision('high')
     args = parse_arguments()
     RETRIEVER_NAME = "BAAI/bge-m3"
     GENERATOR_NAME = args.model_id
+    base_model_name = args.model_id
 
     print(f"Current device: {torch.cuda.get_device_name(0)}")
     print(f"Total VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
@@ -66,25 +77,32 @@ def main():
     print("=" * 50)
     retriever = None
     if args.retrieve:
-        retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=args.k)
         if not retriever:
             raise Exception("Failed to initialize retriever")
         print("✅ Retriever loaded successfully.")
 
     if args.retrieve_adaptively:
-        retriever = load_retriever_adaptively(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
+        retriever = load_retriever_adaptively(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=args.k)
         if not retriever:
             raise Exception("Failed to initialize retriever")
         print("✅ Retriever loaded successfully.")
+
+    is_lora = os.path.isdir(args.model_id) and 'adapter_config.json' in os.listdir(args.model_id)
+    lora_weights = args.model_id if is_lora else None
     
-    pipe, tokenizer = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=args.quantize, batch_size=args.batch_size)
+    if is_lora:
+        print(f"🔍 Detected a fine-tuned LoRA model at: {args.model_id}")
+        config = PeftConfig.from_pretrained(args.model_id)
+        base_model_name = config.base_model_name_or_path
+        print(f"🔧 Loading base model: {base_model_name}")
+    
+    pipe, tokenizer = load_llm(model_id=GENERATOR_NAME, base_model_name=base_model_name, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
     if not pipe:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")
 
-    file_test = args.input
-    with open(file_test, "r", encoding="utf-8") as f:
-        result_data = json.load(f)
+    result_data = load_dataset(args.input)
 
     print("\n" + "=" * 50)
     print("Starting QA Session")
@@ -93,6 +111,12 @@ def main():
         generate_for_self_reflection(args, retriever, pipe, result_data)
     elif args.logit:
         generate_for_multiple_choice(args, retriever, pipe, result_data)
+    elif args.verify:
+        generate_with_verifier(args, retriever, pipe, result_data)
+    elif args.retrieval_queries:
+        generate_with_retrieval_queries(args, retriever, pipe, result_data)
+    elif args.verified_context:
+        generate_with_verified_context(args, retriever, pipe, result_data)
     else:
         generate(args, retriever, pipe, result_data)
     print("\n" + "=" * 50)

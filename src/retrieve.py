@@ -1,15 +1,45 @@
 import os
-from graphstate import GraphState
 from langchain.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from typing import List, TypedDict, Optional
+from make_prompt import format_docs, make_prompt_for_retrieval
+import logging
 
-def retrieve_documents(state: GraphState) -> GraphState:
-    print("---RETRIEVING DOCUMENTS---")
-    question = state["question"]
-    documents = state["retriever"].invoke(question)
-    return {"documents": documents}
+# def retrieve_documents(state: GraphState) -> GraphState:
+#     print("---RETRIEVING DOCUMENTS---")
+#     question = state["question"]
+#     documents = state["retriever"].invoke(question)
+#     return {"documents": documents}
+
+# def deduplicate_documents(docs):
+#     seen = set()
+#     unique_docs = []
+
+#     for doc in docs:
+#         key = (doc.page_content.strip(), doc.metadata.get("source"), doc.metadata.get("page"))
+
+#         if key not in seen:
+#             seen.add(key)
+#             unique_docs.append(doc)
+
+#     return unique_docs
+
+
+
+def retrieve_documents(topic_keyword, question, retriever):
+    documents = retriever.invoke(topic_keyword + ": " + question)
+    logging.info(f"Number of retrieved documents: {len(documents)}")
+    context = format_docs(documents)
+    return context
+
+
+def retrieve_documents_with_rewritten_query(question, retriever):
+    documents = retriever.invoke(question)
+    logging.info(f"Number of retrieved documents: {len(documents)}")
+    context = format_docs(documents)
+    return context
+
 
 
 def load_retriever(model, device, chroma_db_path, kowiki_dataset_path, k=3) -> Optional[Chroma]:
@@ -44,7 +74,7 @@ def load_retriever(model, device, chroma_db_path, kowiki_dataset_path, k=3) -> O
             )
             documents.append(doc)
 
-        print("Creating new Chroma database...")
+        logging.info("Creating new Chroma database...")
         vector_store = Chroma.from_documents(
             documents=documents,
             embedding=embeddings,
@@ -55,7 +85,7 @@ def load_retriever(model, device, chroma_db_path, kowiki_dataset_path, k=3) -> O
     return vector_store.as_retriever(search_kwargs={"k": k})
 
 
-def load_retriever_adaptively(model, device, chroma_db_path, kowiki_dataset_path, k=30, similarity_threshold=0.7) -> Optional[Chroma]:
+def load_retriever_adaptively(model, device, chroma_db_path, kowiki_dataset_path, k=7, similarity_threshold=0.7) -> Optional[Chroma]:
     # Initialize embeddings
     embeddings = HuggingFaceEmbeddings(
         model_name=model,
@@ -87,7 +117,7 @@ def load_retriever_adaptively(model, device, chroma_db_path, kowiki_dataset_path
             )
             documents.append(doc)
 
-        print("Creating new Chroma database...")
+        logging.info("Creating new Chroma database...")
         vector_store = Chroma.from_documents(
             documents=documents,
             embedding=embeddings,
@@ -124,9 +154,9 @@ def load_retriever_adaptively(model, device, chroma_db_path, kowiki_dataset_path
         # Filter documents based on similarity threshold
         filtered_docs = [doc for doc, sim in zip(docs, similarities) if sim >= threshold]
         
-        # 최소 3개의 문서를 보장하기 위해, 필터링된 문서가 3개 미만이면 가장 유사한 3개의 문서를 반환
-        if len(filtered_docs) < 3 and docs:
-            return docs[:3]
+        # 최소 2개의 문서를 보장하기 위해, 필터링된 문서가 2개 미만이면 가장 유사한 2개의 문서를 반환
+        if len(filtered_docs) < 2 and docs:
+            return docs[:2]
 
         return filtered_docs
     

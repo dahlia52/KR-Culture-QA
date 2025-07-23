@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1",
+    "input": {
+      "category": "문화 지식",
+      "domain": "예술",
+      "question_type": "선다형",
+      "topic_keyword": "전통놀이",
+      "question": "다음 한국의 전통 놀이 중 '조선시대'에 행한 놀이는? \\n 1\\t주사위 놀이 2\\t검무 3\\t격구 4\\t영고 5\\t무애무"
+    },
+    "output": {
+      "answer": "3"
+    }
+  },
+  {
+    "id": "2",
+    "input": {
+      "category": "문화 지식",
+      "domain": "풍습/문화유산",
+      "question_type": "선다형",
+      "topic_keyword": "진도아리랑",
+      "question": "한국의 진도아리랑은 어떤 타령에 영향을 받아 만들어졌나요? \\n 1\\t 각설이타령   2\\t도라지타령    3\\t용강타령    4\\t 산아지타령"
+    },
+    "output": {
+      "answer": "4"
+    }
+  },
+  {
+    "id": "4",
+    "input": {
+      "category": "문화 지식",
+      "domain": "과학기술",
+      "question_type": "선다형",
+      "topic_keyword": "우주인",
+      "question": "힌국인 최초의 우주 비행사는 누구인가요? \\n 1\\t 조니 김     2\\t 이소연     3\\t 이상률     4\\t 김재수"
+    },
+    "output": {
+      "answer": "2"
+    }
+  }
+]

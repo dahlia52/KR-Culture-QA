@@ -5,3 +5,6 @@ src/memo.py
 models/*
 wandb/*
 run/*
+wandb/*
+trainer_output/*
+log_*

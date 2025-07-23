@@ -22,10 +22,10 @@ from compute_metrics import compute_metrics
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEFAULT_MODEL_ID = "K-intelligence/Midm-2.0-Base-Instruct"
-DEFAULT_TRAIN_DATA_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total+.json')
-DEFAULT_VALID_DATA_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_dev+.json')
+DEFAULT_TRAIN_DATA_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형+단답형+서술형.json')
+DEFAULT_VALID_DATA_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형+단답형+서술형.json')
 
-DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model')
+DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model-선다형-단답형-서술형-NEW')
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
 RETRIEVER_NAME = "BAAI/bge-m3"
@@ -39,8 +39,8 @@ def parse_arguments():
     parser.add_argument("--output_dir", type=str, default=DEFAULT_OUTPUT_DIR, help="Directory to save the fine-tuned model")
     # Training hyperparameters
     parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs")
-    parser.add_argument("--batch_size", type=int, default=1, help="Training batch size")
-    parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate")
+    parser.add_argument("--batch_size", type=int, default=2, help="Training batch size")
+    parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate")
 
     parser.add_argument("--evaluation", action="store_true", help="Evaluate validation set")
     parser.add_argument("--retriever", type=str, default=RETRIEVER_NAME, help="Retriever name")
@@ -118,16 +118,9 @@ def main():
     print(f"Learning rate: {args.learning_rate}")
     print("=" * 50)
 
-    print("\n1. Loading tokenizer and model...")
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
-    tokenizer.padding_side = 'left'
-    if tokenizer.pad_token is None:
-        print("Pad token is not set. Setting pad token to eos token.")
-        tokenizer.pad_token = tokenizer.eos_token
-
     retriever = None
     if args.retrieve:
-        print("\n2. Loading retriever...")
+        print("\n1. Loading retriever...")
         device = "cuda" if torch.cuda.is_available() else "cpu"
         retriever = load_retriever(model=RETRIEVER_NAME, device=device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
         if not retriever:
@@ -135,11 +128,27 @@ def main():
         print("✅ Retriever loaded successfully.")
 
 
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model_id,
+        device_map="auto",
+        torch_dtype=torch.bfloat16
+    )
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    tokenizer.padding_side = 'left'
+    
+    if tokenizer.pad_token is None or tokenizer.pad_token == tokenizer.eos_token:
+        print("Setting pad token.")
+        tokenizer.add_special_tokens({'pad_token': '<|pad|>'})
+        model.resize_token_embeddings(len(tokenizer))  # 반드시 tokenizer 추가 후 호출
+        model.config.pad_token_id = tokenizer.pad_token_id
+    print("✅ Tokenizer and model loaded.")
+
+
     print("\n3. Loading and preparing dataset...")
     full_train_dataset = load_and_prepare_data(args.train_data_path, tokenizer, retriever, args.retrieve)
     train_dataset = full_train_dataset.map(lambda example: {'text': example['text']}, remove_columns=list(full_train_dataset.column_names))
     train_dataset = train_dataset.map(lambda examples: tokenizer(examples['text'],
-                                  padding=True, truncation = True, max_length=2048 * 16), 
+                                  padding=True, truncation = True, max_length=1024), 
                                   batched=True, batch_size=args.batch_size, remove_columns=train_dataset.column_names)
 
     valid_dataset = None
@@ -147,7 +156,7 @@ def main():
         full_valid_dataset = load_and_prepare_data(args.valid_data_path, tokenizer, retriever, args.retrieve)
         valid_dataset = full_valid_dataset.map(lambda example: {'text': example['text']}, remove_columns=list(full_valid_dataset.column_names))
         valid_dataset = valid_dataset.map(lambda examples: tokenizer(examples['text'],
-                                  padding=True, truncation = True, max_length=2048 * 16), 
+                                  padding=True, truncation = True, max_length=1024), 
                                   batched=True, batch_size=args.batch_size, remove_columns=valid_dataset.column_names)
     else:
         full_valid_dataset = None
@@ -156,13 +165,6 @@ def main():
     print(f"Training dataset size: {len(train_dataset)}")
     if args.evaluation:
         print(f"Validation dataset size: {len(valid_dataset)}")
-
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_id,
-        device_map="auto",
-        torch_dtype=torch.bfloat16
-    )
-    print("✅ Tokenizer and model loaded.")
 
 
     print("\n4. Configuring training...")
