@@ -16,7 +16,7 @@ def save_dataset(data: List[Dict[str, Any]], file_path: str) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True):
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
     tokenizer.padding_side = 'left'
     
     if tokenizer.pad_token is None:
@@ -61,7 +61,7 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        max_new_tokens=1024,
+        max_new_tokens=2048,
         do_sample=True,
         top_p=0.9,
         top_k=30,
