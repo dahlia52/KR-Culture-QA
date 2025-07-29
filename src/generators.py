@@ -106,9 +106,6 @@ def generate_with_retrieval_queries(args, retriever, pipe, result_data):
 
     return result_data
 
-    #save_dataset(result_data, args.output)
-
-
 
 
 # Generate Answers
@@ -157,6 +154,13 @@ def generate(args, retriever, pipe, result_data):
         # The output from the pipeline is a list with a dictionary
         generated_text = output[0]['generated_text']
         answer = generated_text[-1]['content']
+
+        if 'ass' in answer:
+            answer = answer.split('ass')[0].strip()
+        if '\u0000' in answer:
+            answer = answer.split('\u0000')[0].strip()
+        if '답변:' in answer:
+            answer = answer.split('답변:')[1].strip()
         result_data[idx]["input"]["context"] = contexts[idx].strip()
         result_data[idx]["output"] = {"answer": answer.strip()}
 
@@ -671,5 +675,43 @@ def generate_with_verified_context(args, retriever, pipe, result_data):
         generated_text = output[0]['generated_text']
         answer = generated_text[-1]['content']
         result_data[idx]["output"] = {"answer": answer.strip()}
+
+    return result_data
+
+
+
+def generate_final(args, pipe, result_data):
+    logging.info("### Generate answers ###")
+    prompts = []
+    system_prompt = make_system_prompt()
+    
+    logging.info("Preparing prompts...")
+    regenerate_idx = []
+    for idx, item in tqdm.tqdm(enumerate(result_data)):
+        if item['output']['answer'].isdigit():
+            pass
+        user_prompt = final_answer_prompt_for_MC(
+            topic_keyword=item["input"]["topic_keyword"],
+            question=item["input"]["question"],
+            answer = item["output"]["answer"],
+        )
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        # pipeline's tokenizer will apply the chat template
+        prompts.append(messages)
+        regenerate_idx.append(idx)
+
+    logging.info("Generating answers in batch...")
+    outputs = pipe(prompts)
+
+    logging.info("Processing generated answers...")
+    for idx, output in enumerate(tqdm.tqdm(outputs)):
+        # The output from the pipeline is a list with a dictionary
+        generated_text = output[0]['generated_text']
+        answer = generated_text[-1]['content']
+        result_data[regenerate_idx[idx]]["input"]["rationale"] = result_data[regenerate_idx[idx]]["output"]["answer"]
+        result_data[regenerate_idx[idx]]["output"] = {"answer": answer.strip()}
 
     return result_data

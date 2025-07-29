@@ -141,7 +141,7 @@ def main():
     #retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=args.k)
     args.retrieve = True
     vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
-    retriever = vector_store.as_retriever(search_kwargs={"k": 2})
+    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     
     if not retriever:
         raise Exception("Failed to initialize retriever")
@@ -181,61 +181,7 @@ def main():
     if not pipe_mc:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")
-    mc_data = generate_with_rationale(args, retriever, pipe_mc, mc_data)
-
-    # Unload Multiple Choice model
-    unload_model(pipe_mc, tokenizer_mc)
-    pipe_mc = tokenizer_mc = None
-
-    sa_data = load_dataset("./resource/QA/final3_단답형.json")
-
-
-    # # Single Answer
-    # retriever = vector_store.as_retriever(search_kwargs={"k": 4})
-    # GENERATOR_SA = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
-    # is_lora = os.path.isdir(GENERATOR_SA) and 'adapter_config.json' in os.listdir(GENERATOR_SA)
-    # lora_weights = GENERATOR_SA if is_lora else None
-    
-    # if is_lora:
-    #     print(f"🔍 Detected a fine-tuned LoRA model at: {GENERATOR_SA}")
-    #     config = PeftConfig.from_pretrained(GENERATOR_SA)
-    #     base_model_name_sa = config.base_model_name_or_path
-    #     print(f"🔧 Loading base model: {base_model_name_sa}")
-    
-    # pipe_sa, tokenizer_sa = load_llm(model_id=GENERATOR_SA, base_model_name=base_model_name_sa, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
-    # if not pipe_sa:
-    #     raise Exception("Failed to initialize language model pipeline")
-    # print("✅ Language model pipeline loaded successfully.")
-    # sa_data = generate(args, retriever, pipe_sa, sa_data)
-
-    # # Unload Single Answer model
-    # unload_model(pipe_sa, tokenizer_sa)
-    # pipe_sa = tokenizer_sa = None
-
-    # # Descriptive
-    # args.retrieve = False
-    # GENERATOR_DC = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
-    # is_lora = os.path.isdir(GENERATOR_DC) and 'adapter_config.json' in os.listdir(GENERATOR_DC)
-    # lora_weights = GENERATOR_DC if is_lora else None
-    
-    # if is_lora:
-    #     print(f"🔍 Detected a fine-tuned LoRA model at: {GENERATOR_DC}")
-    #     config = PeftConfig.from_pretrained(GENERATOR_DC)
-    #     base_model_name_dc = config.base_model_name_or_path
-    #     print(f"🔧 Loading base model: {base_model_name_dc}")
-    
-    # pipe_dc, tokenizer_dc = load_llm(model_id=GENERATOR_DC, base_model_name=base_model_name_dc, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
-    # if not pipe_dc:
-    #     raise Exception("Failed to initialize language model pipeline")
-    # print("✅ Language model pipeline loaded successfully.")
-    # dc_data = generate(args, retriever, pipe_dc, dc_data)
-
-    # # Unload Descriptive model
-    # unload_model(pipe_dc, tokenizer_dc)
-    # pipe_dc = tokenizer_dc = None
-
-    dc_data = load_dataset("./resource/QA/final3_서술형.json")
-
+    mc_data = generate(args, retriever, pipe_mc, mc_data) # _with_rationale
 
     result_data = mc_data + sa_data + dc_data
     result_data = sorted(result_data, key=lambda x: int(x['id']))

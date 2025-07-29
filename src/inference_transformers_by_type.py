@@ -31,7 +31,7 @@ current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
 QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_test+.json')
-QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result_qwen3.json')
+QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/final_new.json')
 
 log_filename = f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 logging.basicConfig(filename=log_filename, level=logging.INFO)
@@ -58,52 +58,52 @@ def parse_arguments():
     return parser.parse_args()
 
 
-# def generate(args, retriever, pipe, result_data):
-#     logging.info("### Generate answers ###")
-#     prompts = []
-#     system_prompt = make_system_prompt()
+def generate(args, retrieve, retriever, pipe, result_data):
+    logging.info("### Generate answers ###")
+    prompts = []
+    system_prompt = make_system_prompt()
     
-#     logging.info("Preparing prompts...")
+    logging.info("Preparing prompts...")
     
-#     for item in tqdm.tqdm(result_data):
-#         question = item["input"]["question"]
-#         question_type = item["input"]["question_type"]
-#         topic_keyword = item["input"]["topic_keyword"]
+    for item in tqdm.tqdm(result_data):
+        question = item["input"]["question"]
+        question_type = item["input"]["question_type"]
+        topic_keyword = item["input"]["topic_keyword"]
 
-#         context = ""
-#         if question_type == '단답형':
-#             context = retrieve_documents(topic_keyword, question, retriever)
+        context = ""
+        if retrieve:
+            context = retrieve_documents(topic_keyword, question, retriever)
         
-#         user_prompt = make_prompt(
-#             question_type=question_type,
-#             category=item["input"]["category"],
-#             domain=item["input"]["domain"],
-#             topic_keyword=topic_keyword,
-#             context=context,
-#             question=question,
-#             fewshot=False,
-#             retrieve = True if question_type == '단답형' else False
-#         )
+        user_prompt = make_prompt(
+            question_type=question_type,
+            category=item["input"]["category"],
+            domain=item["input"]["domain"],
+            topic_keyword=topic_keyword,
+            context=context,
+            question=question,
+            fewshot=False,
+            retrieve = retrieve
+        )
         
-#         messages = [
-#             {"role": "system", "content": system_prompt},
-#             {"role": "user", "content": user_prompt}
-#         ]
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
         
-#         # pipeline's tokenizer will apply the chat template
-#         prompts.append(messages)
+        # pipeline's tokenizer will apply the chat template
+        prompts.append(messages)
 
-#     logging.info("Generating answers in batch...")
-#     outputs = pipe(prompts)
+    logging.info("Generating answers in batch...")
+    outputs = pipe(prompts)
 
-#     logging.info("Processing generated answers...")
-#     for idx, output in enumerate(tqdm.tqdm(outputs)):
-#         # The output from the pipeline is a list with a dictionary
-#         generated_text = output[0]['generated_text']
-#         answer = generated_text[-1]['content']
-#         result_data[idx]["output"] = {"answer": answer.strip()}
+    logging.info("Processing generated answers...")
+    for idx, output in enumerate(tqdm.tqdm(outputs)):
+        # The output from the pipeline is a list with a dictionary
+        generated_text = output[0]['generated_text']
+        answer = generated_text[-1]['content']
+        result_data[idx]["output"] = {"answer": answer.strip()}
 
-#     return result_data
+    return result_data
 
 
 def unload_model(pipe, tokenizer):
@@ -124,7 +124,7 @@ def main():
     torch.cuda.empty_cache()
     torch.set_float32_matmul_precision('high')
     args = parse_arguments()
-    RETRIEVER_NAME = "dragonkue/snowflake-arctic-embed-l-v2.0-ko" #"BAAI/bge-m3"
+    RETRIEVER_NAME = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
     GENERATOR_NAME = args.model_id
     base_model_name = args.model_id
 
@@ -181,61 +181,55 @@ def main():
     if not pipe_mc:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")
-    mc_data = generate(args, retriever, pipe_mc, mc_data) # _with_rationale
+    mc_data = generate(args, True, retriever, pipe_mc, mc_data) # _with_rationale
 
     # Unload Multiple Choice model
     unload_model(pipe_mc, tokenizer_mc)
     pipe_mc = tokenizer_mc = None
 
-    sa_data = load_dataset("./resource/QA/final3_단답형.json")
-
-
-    # # Single Answer
-    # retriever = vector_store.as_retriever(search_kwargs={"k": 4})
-    # GENERATOR_SA = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
-    # is_lora = os.path.isdir(GENERATOR_SA) and 'adapter_config.json' in os.listdir(GENERATOR_SA)
-    # lora_weights = GENERATOR_SA if is_lora else None
+    # Single Answer
+    retriever = vector_store.as_retriever(search_kwargs={"k": 4})
+    GENERATOR_SA = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
+    is_lora = os.path.isdir(GENERATOR_SA) and 'adapter_config.json' in os.listdir(GENERATOR_SA)
+    lora_weights = GENERATOR_SA if is_lora else None
     
-    # if is_lora:
-    #     print(f"🔍 Detected a fine-tuned LoRA model at: {GENERATOR_SA}")
-    #     config = PeftConfig.from_pretrained(GENERATOR_SA)
-    #     base_model_name_sa = config.base_model_name_or_path
-    #     print(f"🔧 Loading base model: {base_model_name_sa}")
+    if is_lora:
+        print(f"🔍 Detected a fine-tuned LoRA model at: {GENERATOR_SA}")
+        config = PeftConfig.from_pretrained(GENERATOR_SA)
+        base_model_name_sa = config.base_model_name_or_path
+        print(f"🔧 Loading base model: {base_model_name_sa}")
     
-    # pipe_sa, tokenizer_sa = load_llm(model_id=GENERATOR_SA, base_model_name=base_model_name_sa, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
-    # if not pipe_sa:
-    #     raise Exception("Failed to initialize language model pipeline")
-    # print("✅ Language model pipeline loaded successfully.")
-    # sa_data = generate(args, retriever, pipe_sa, sa_data)
+    pipe_sa, tokenizer_sa = load_llm(model_id=GENERATOR_SA, base_model_name=base_model_name_sa, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
+    if not pipe_sa:
+        raise Exception("Failed to initialize language model pipeline")
+    print("✅ Language model pipeline loaded successfully.")
+    sa_data = generate(args, retriever, pipe_sa, sa_data)
 
-    # # Unload Single Answer model
-    # unload_model(pipe_sa, tokenizer_sa)
-    # pipe_sa = tokenizer_sa = None
+    # Unload Single Answer model
+    unload_model(pipe_sa, tokenizer_sa)
+    pipe_sa = tokenizer_sa = None
 
-    # # Descriptive
-    # args.retrieve = False
-    # GENERATOR_DC = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
-    # is_lora = os.path.isdir(GENERATOR_DC) and 'adapter_config.json' in os.listdir(GENERATOR_DC)
-    # lora_weights = GENERATOR_DC if is_lora else None
+    # Descriptive
+    args.retrieve = False
+    GENERATOR_DC = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
+    is_lora = os.path.isdir(GENERATOR_DC) and 'adapter_config.json' in os.listdir(GENERATOR_DC)
+    lora_weights = GENERATOR_DC if is_lora else None
     
-    # if is_lora:
-    #     print(f"🔍 Detected a fine-tuned LoRA model at: {GENERATOR_DC}")
-    #     config = PeftConfig.from_pretrained(GENERATOR_DC)
-    #     base_model_name_dc = config.base_model_name_or_path
-    #     print(f"🔧 Loading base model: {base_model_name_dc}")
+    if is_lora:
+        print(f"🔍 Detected a fine-tuned LoRA model at: {GENERATOR_DC}")
+        config = PeftConfig.from_pretrained(GENERATOR_DC)
+        base_model_name_dc = config.base_model_name_or_path
+        print(f"🔧 Loading base model: {base_model_name_dc}")
     
-    # pipe_dc, tokenizer_dc = load_llm(model_id=GENERATOR_DC, base_model_name=base_model_name_dc, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
-    # if not pipe_dc:
-    #     raise Exception("Failed to initialize language model pipeline")
-    # print("✅ Language model pipeline loaded successfully.")
-    # dc_data = generate(args, retriever, pipe_dc, dc_data)
+    pipe_dc, tokenizer_dc = load_llm(model_id=GENERATOR_DC, base_model_name=base_model_name_dc, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
+    if not pipe_dc:
+        raise Exception("Failed to initialize language model pipeline")
+    print("✅ Language model pipeline loaded successfully.")
+    dc_data = generate(args, retriever, pipe_dc, dc_data)
 
-    # # Unload Descriptive model
-    # unload_model(pipe_dc, tokenizer_dc)
-    # pipe_dc = tokenizer_dc = None
-
-    dc_data = load_dataset("./resource/QA/final3_서술형.json")
-
+    # Unload Descriptive model
+    unload_model(pipe_dc, tokenizer_dc)
+    pipe_dc = tokenizer_dc = None
 
     result_data = mc_data + sa_data + dc_data
     result_data = sorted(result_data, key=lambda x: int(x['id']))

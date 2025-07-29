@@ -260,4 +260,48 @@ def load_vector_store(model, device, chroma_db_path, kowiki_dataset_path) -> Opt
         )
         vector_store.persist()
     
-    return vector_store
+    return embeddings, vector_store
+
+
+# Create a custom retriever that uses similarity threshold
+def custom_retriever(query: str, embeddings, vector_store: Chroma, k: int = 7, threshold: float = 0.65):
+    # Get the base retriever
+    base_retriever = vector_store.as_retriever(search_kwargs={"k": k})
+    
+    # First, get the top k documents
+    docs = base_retriever.invoke(query)
+    
+    # If no documents, return empty list
+    if not docs:
+        return []
+        
+    # Get the similarity scores for the retrieved documents
+    query_embedding = embeddings.embed_query(query)
+    doc_embeddings = [embeddings.embed_query(doc.page_content) for doc in docs]
+    
+    # Calculate cosine similarity between query and each document
+    from numpy import dot
+    from numpy.linalg import norm
+    
+    similarities = []
+    for doc_emb in doc_embeddings:
+        # Calculate cosine similarity
+        cos_sim = dot(query_embedding, doc_emb) / (norm(query_embedding) * norm(doc_emb))
+        similarities.append(cos_sim)
+    
+    # Filter documents based on similarity threshold
+    filtered_docs = [doc for doc, sim in zip(docs, similarities) if sim >= threshold]
+    
+    # 최소 3개의 문서를 보장하기 위해, 필터링된 문서가 3개 미만이면 가장 유사한 3개의 문서를 반환
+    if len(filtered_docs) < 4 and docs:
+        return docs[:4]
+
+    return filtered_docs
+
+
+class CustomRetriever:
+    def __init__(self, retriever_func):
+        self.retrieve = retriever_func
+        
+    def invoke(self, query):
+        return self.retrieve(query)

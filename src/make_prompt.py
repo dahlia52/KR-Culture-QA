@@ -260,11 +260,11 @@ def make_verifier_prompt(instruction: str, topic_keyword: str, question: str, an
     [질문]
     {question}
 
-    [답변]
+    [초안 답변]
     {answer}
 
-    이 답변은 질문에 올바르게 대답한 것입니까?
-    예/아니오로 답하시오."""
+    [이 답변은 질문에 올바르게 대답한 것입니까?
+    예/아니오로 답하시오.]"""
     return verifier_prompt.format(instruction=instruction, topic_keyword=topic_keyword, question=question, answer=answer)
 
 
@@ -407,3 +407,23 @@ def make_prompt_for_kiip(question: str) -> str:
         [답변]
         """
     return template.format(question=question)
+
+
+
+def final_answer_prompt_for_MC(topic_keyword: str, question: str, answer: str):
+    instruction = type_instructions.get("선다형", "")
+    verifier_prompt = """{instruction}
+
+    [주제 키워드]
+    {topic_keyword}
+
+    [질문]
+    {question}
+
+    [초안 답변]
+    {answer}
+
+    [최종 정답]
+    숫자 하나만 답변하시오.
+    """
+    return verifier_prompt.format(instruction=instruction, topic_keyword=topic_keyword, question=question, answer=answer)
