@@ -1,5 +1,4 @@
-resource/retrieval_docs/chroma_db/*
-resource/retrieval_docs/kowiki_dataset/*
+resource/retrieval_docs/*
 korean_evaluation/
 src/memo.py
 models/*
@@ -8,3 +7,6 @@ run/*
 wandb/*
 trainer_output/*
 log_*
+resource/KIIP/*
+resource/QA/result_*
+src/__pycache__

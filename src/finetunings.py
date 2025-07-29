@@ -7,7 +7,7 @@ from typing import Dict, List
 
 import torch
 from langchain.vectorstores import Chroma
-from datasets import Dataset, DatasetDict
+from datasets import Dataset, DatasetDict, concatenate_datasets
 from peft import get_peft_model, LoraConfig, TaskType
 from transformers import (
     AutoModelForCausalLM,
@@ -22,10 +22,12 @@ from compute_metrics import compute_metrics
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEFAULT_MODEL_ID = "K-intelligence/Midm-2.0-Base-Instruct"
-DEFAULT_TRAIN_DATA_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형+단답형+서술형.json')
+DEFAULT_TRAIN_DATA_PATH1 = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형_with_rationale_preprocessed.json')
+DEFAULT_TRAIN_DATA_PATH2 = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형_to_서술형.json')
+DEFAULT_TRAIN_DATA_PATH3 = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total_difficulty_sorted.json')
 DEFAULT_VALID_DATA_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형+단답형+서술형.json')
 
-DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model-선다형-단답형-서술형-NEW')
+DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model-rationale-선다형_to_서술형-sorted-NEW')
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
 CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
 RETRIEVER_NAME = "BAAI/bge-m3"
@@ -34,7 +36,9 @@ K = 3
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Fine-tuning a language model on a custom QA dataset.")
     parser.add_argument("--model_id", type=str, default=DEFAULT_MODEL_ID, help="Hugging Face model ID")
-    parser.add_argument("--train_data_path", type=str, default=DEFAULT_TRAIN_DATA_PATH, help="Path to the training data JSON file")
+    parser.add_argument("--train_data_path1", type=str, default=DEFAULT_TRAIN_DATA_PATH1, help="Path to the training data JSON file")
+    parser.add_argument("--train_data_path2", type=str, default=DEFAULT_TRAIN_DATA_PATH2, help="Path to the training data JSON file")
+    parser.add_argument("--train_data_path3", type=str, default=DEFAULT_TRAIN_DATA_PATH3, help="Path to the training data JSON file")
     parser.add_argument("--valid_data_path", type=str, default=DEFAULT_VALID_DATA_PATH, help="Path to the validation data JSON file")
     parser.add_argument("--output_dir", type=str, default=DEFAULT_OUTPUT_DIR, help="Directory to save the fine-tuned model")
     # Training hyperparameters
@@ -49,19 +53,61 @@ def parse_arguments():
 
     return parser.parse_args()
 
-def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=None, retrieve = False) -> DatasetDict:
-    with open(data_path, 'r', encoding='utf-8') as f:
-        raw_data = json.load(f)
+def load_and_prepare_data(data_path1: str, data_path2: str, data_path3: str, tokenizer: AutoTokenizer, retriever=None, retrieve = False) -> DatasetDict:
+    with open(data_path1, 'r', encoding='utf-8') as f:
+        raw_data1= json.load(f)
+    
+    with open(data_path2, 'r', encoding='utf-8') as f:
+        raw_data2 = json.load(f)
+    
+    with open(data_path3, 'r', encoding='utf-8') as f:
+        raw_data3 = json.load(f)
     
     # Assign persona
     system_prompt = make_system_prompt()
-    def generate_prompt(example):
+    def generate_prompt1(example):
         question = example['input']['question']
         context = ""
         if retrieve:
             documents = retriever.invoke(question)
             context = format_docs(documents)
-        
+        user_prompt = make_prompt_for_rationale(
+            question_type=example["input"]["question_type"],
+            category=example["input"]["category"],
+            domain=example["input"]["domain"],
+            topic_keyword=example["input"]["topic_keyword"],
+            context=context,
+            question=question,
+            fewshot=False,
+            retrieve=retrieve
+            )
+        if example['input']['question_type'] == '단답형' and '#' in example['output']['answer']:
+            answer = example['output']['answer'].split('#')[0]
+        else:
+            answer = example['output']['answer']
+
+        # Create a single text field for the trainer using the chat template.
+        prompt_messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+            {"role": "assistant", "content": answer}
+        ]
+        # The tokenizer will apply the chat template and add EOS token.
+        text = tokenizer.apply_chat_template(
+            prompt_messages, 
+            tokenize=False, 
+            add_generation_prompt=False,
+        )
+        if not text.endswith(tokenizer.eos_token):
+            text += tokenizer.eos_token
+        return {"text": text}
+
+    def generate_prompt2(example):
+        question = example['input']['question']
+        context = ""
+        if retrieve:
+            documents = retriever.invoke(question)
+            context = format_docs(documents)
         user_prompt = make_prompt(
             question_type=example["input"]["question_type"],
             category=example["input"]["category"],
@@ -71,7 +117,7 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=No
             question=question,
             fewshot=False,
             retrieve=retrieve
-        )
+            )
         if example['input']['question_type'] == '단답형' and '#' in example['output']['answer']:
             answer = example['output']['answer'].split('#')[0]
         else:
@@ -95,9 +141,18 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=No
 
 
     # Create dataset from the list of dictionaries and then format it
-    dataset = Dataset.from_list(raw_data)
-    dataset = dataset.map(generate_prompt)
-    return dataset
+    dataset1 = Dataset.from_list(raw_data1)
+    dataset1 = dataset1.map(generate_prompt1)
+    
+    dataset2 = Dataset.from_list(raw_data2)
+    dataset2 = dataset2.map(generate_prompt2)
+
+    dataset3 = Dataset.from_list(raw_data3)
+    dataset3 = dataset3.map(generate_prompt2)
+
+    dataset = concatenate_datasets([dataset2, dataset3]) 
+
+    return dataset1, dataset
 
 
 def main():
@@ -160,11 +215,16 @@ def main():
 
 
     print("\n3. Loading and preparing dataset...")
-    full_train_dataset = load_and_prepare_data(args.train_data_path, tokenizer, retriever, args.retrieve)
-    train_dataset = full_train_dataset.map(lambda example: {'text': example['text']}, remove_columns=list(full_train_dataset.column_names))
-    train_dataset = train_dataset.map(lambda examples: tokenizer(examples['text'],
+    full_train_dataset1, full_train_dataset2 = load_and_prepare_data(args.train_data_path1, args.train_data_path2, args.train_data_path3, tokenizer, retriever, args.retrieve)
+    train_dataset1 = full_train_dataset1.map(lambda example: {'text': example['text']}, remove_columns=list(full_train_dataset1.column_names))
+    train_dataset1 = train_dataset1.map(lambda examples: tokenizer(examples['text'],
                                   padding=True, truncation = True, max_length=1024), 
-                                  batched=True, batch_size=args.batch_size, remove_columns=train_dataset.column_names)
+                                  batched=True, batch_size=args.batch_size, remove_columns=train_dataset1.column_names)
+
+    train_dataset2 = full_train_dataset2.map(lambda example: {'text': example['text']}, remove_columns=list(full_train_dataset2.column_names))
+    train_dataset2 = train_dataset2.map(lambda examples: tokenizer(examples['text'],
+                                  padding=True, truncation = True, max_length=1024), 
+                                  batched=True, batch_size=args.batch_size, remove_columns=train_dataset2.column_names)
 
     valid_dataset = None
     if args.evaluation:
@@ -177,7 +237,7 @@ def main():
         full_valid_dataset = None
 
     print("✅ Dataset prepared.")
-    print(f"Training dataset size: {len(train_dataset)}")
+    print(f"Training dataset size: {len(train_dataset1) + len(train_dataset2)}")
     if args.evaluation:
         print(f"Validation dataset size: {len(valid_dataset)}")
 
@@ -214,15 +274,15 @@ def main():
 
     # Use DataCollatorForCompletionOnlyLM to train only on the assistant's response.
     # The response template is the start of the assistant's turn in the ChatML format.
-    response_template_with_context = "[답변]"
+    response_template_with_context = "태그 안에 정답만을 입력할 것을 명심하시오."
     response_template_ids = tokenizer.encode(response_template_with_context, add_special_tokens=False)[2:]
 
     data_collator = DataCollatorForCompletionOnlyLM(response_template_ids, tokenizer=tokenizer, mlm = False)
 
-    trainer = SFTTrainer(
+    trainer1 = SFTTrainer(
         model=model,
         args=training_args,
-        train_dataset=train_dataset,
+        train_dataset=train_dataset1,
         eval_dataset=valid_dataset,
         data_collator=data_collator,
         peft_config=lora_config,
@@ -232,8 +292,30 @@ def main():
     
     print("✅ Training configured.")
 
-    print("\n5. Starting model training...")
-    trainer.train()
+    print("\n5. Starting model training for dataset 1...")
+    trainer1.train()
+
+    response_template_with_context = "[답변]"
+    response_template_ids = tokenizer.encode(response_template_with_context, add_special_tokens=False)[2:]
+
+    data_collator = DataCollatorForCompletionOnlyLM(response_template_ids, tokenizer=tokenizer, mlm = False)
+
+    trainer2 = SFTTrainer(
+        model=trainer1.model,
+        args=training_args,
+        train_dataset=train_dataset2,
+        eval_dataset=valid_dataset,
+        data_collator=data_collator,
+        peft_config=lora_config,
+        compute_metrics=compute_metrics_fn,
+        processing_class=tokenizer,
+    )
+    
+    print("✅ Training configured.")
+
+    print("\n5. Starting model training for dataset 2...")
+    trainer2.train()
+
     
     total_training_time = time.time() - total_start_time
     
@@ -245,7 +327,7 @@ def main():
     print("="*50)
 
     print("\n6. Saving the fine-tuned model...")
-    trainer.save_model(args.output_dir)
+    trainer2.save_model(args.output_dir)
     tokenizer.save_pretrained(args.output_dir)
     print(f"✅ Model saved to {args.output_dir}")
 

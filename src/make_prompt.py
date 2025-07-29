@@ -111,6 +111,102 @@ def make_prompt(question_type: str, category: str, domain: str, topic_keyword: s
 
 
 
+def make_prompt_for_rationale(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False, retrieve: bool = True) -> str:
+    if fewshot:
+        instruction = type_instructions_with_fewshot.get(question_type, "")
+    else:
+        instruction = type_instructions.get(question_type, "")
+    if retrieve:
+        template = """{instruction}
+
+        [기타 정보]
+        - 카테고리: {category}
+        - 도메인: {domain}
+        - 주제 키워드: {topic_keyword}
+
+        [참고문헌]
+        - 제공된 문서는 답변에 도움이 될 수도, 답변과 무관할 수도 있다. 질문과 관련이 없다면 답변에 참고하지 말고 무시하십시오.
+        {context}
+
+        [질문]
+        {question}
+
+        질문에 대한 답변은 <reasoning> ... </reasoning> <answer> ... </answer> 형식으로 답하시오. <answer>...</answer> 태그 안에 정답만을 입력할 것을 명심하시오.
+        """
+    else:
+        template = """{instruction}
+
+        [기타 정보]
+        - 카테고리: {category}
+        - 도메인: {domain}
+        - 주제 키워드: {topic_keyword}
+
+        [질문]
+        {question}
+
+        질문에 대한 답변은 <reasoning> ... </reasoning> <answer> ... </answer> 형식으로 답하시오. <answer>...</answer> 태그 안에 정답만을 입력할 것을 명심하시오.
+        """
+    return template.format(instruction=instruction, category=category, domain=domain, topic_keyword=topic_keyword, context=context, question=question)
+
+
+
+def make_prompt_for_only_rationale(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False, retrieve: bool = True) -> str:
+    if fewshot:
+        instruction = type_instructions_with_fewshot.get(question_type, "")
+    else:
+        instruction = type_instructions.get(question_type, "")
+    if retrieve:
+        template = """{instruction}
+
+        [기타 정보]
+        - 카테고리: {category}
+        - 도메인: {domain}
+        - 주제 키워드: {topic_keyword}
+
+        [참고문헌]
+        - 제공된 문서는 답변에 도움이 될 수도, 답변과 무관할 수도 있다. 질문과 관련이 없다면 답변에 참고하지 말고 무시하십시오.
+        {context}
+
+        [질문]
+        {question}
+
+        다음 질문의 답변을 구성하기 전 풀이과정을 자세히 서술하시오.
+        """
+    else:
+        template = """{instruction}
+
+        [기타 정보]
+        - 카테고리: {category}
+        - 도메인: {domain}
+        - 주제 키워드: {topic_keyword}
+
+        [질문]
+        {question}
+
+        다음 질문의 답변을 구성하기 전 풀이과정을 자세히 서술하시오.
+        """
+    return template.format(instruction=instruction, category=category, domain=domain, topic_keyword=topic_keyword, context=context, question=question)
+
+
+def make_prompt_for_only_answer(instruction: str, topic_keyword: str, question: str, answer: str):
+    prompt = """{instruction}
+
+    [주제 키워드]
+    {topic_keyword}
+
+    [질문]
+    {question}
+
+    [풀이과정]
+    {answer}
+
+    [답변]
+    """
+    return prompt.format(instruction=instruction, topic_keyword=topic_keyword, question=question, answer=answer)
+
+
+
+
 def make_prompt_for_grpo(question_type: str, category: str, domain: str, topic_keyword: str, context: str, question: str, fewshot: bool = False, retrieve: bool = True) -> str:
     if fewshot:
         instruction = type_instructions_with_fewshot.get(question_type, "")
@@ -300,3 +396,14 @@ def make_prompt_for_context(topic_keyword: str, question: str, context: str):
     예/아니오로 답하시오.
     """
     return prompt.format(topic_keyword=topic_keyword, question=question, context=context)
+
+
+
+def make_prompt_for_kiip(question: str) -> str:
+    template = """
+        [질문]
+        {question}
+
+        [답변]
+        """
+    return template.format(question=question)

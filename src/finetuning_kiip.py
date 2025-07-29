@@ -56,26 +56,11 @@ def load_and_prepare_data(data_path: str, tokenizer: AutoTokenizer, retriever=No
     # Assign persona
     system_prompt = make_system_prompt()
     def generate_prompt(example):
-        question = example['input']['question']
-        context = ""
-        if retrieve:
-            documents = retriever.invoke(question)
-            context = format_docs(documents)
-        
-        user_prompt = make_prompt(
-            question_type=example["input"]["question_type"],
-            category=example["input"]["category"],
-            domain=example["input"]["domain"],
-            topic_keyword=example["input"]["topic_keyword"],
-            context=context,
-            question=question,
-            fewshot=False,
-            retrieve=retrieve
+        question = example['question']
+        user_prompt = make_prompt_for_kiip(
+            question=question
         )
-        if example['input']['question_type'] == '단답형' and '#' in example['output']['answer']:
-            answer = example['output']['answer'].split('#')[0]
-        else:
-            answer = example['output']['answer']
+        answer = example['answer']
 
         # Create a single text field for the trainer using the chat template.
         prompt_messages = [
@@ -128,35 +113,20 @@ def main():
         print("✅ Retriever loaded successfully.")
 
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
-    tokenizer.padding_side = 'left'
-
     model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
         device_map="auto",
         torch_dtype=torch.bfloat16
     )
-    model.resize_token_embeddings(len(tokenizer))
-    model.config.pad_token_id = tokenizer.pad_token_id
-
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    tokenizer.padding_side = 'left'
+    
     if tokenizer.pad_token is None or tokenizer.pad_token == tokenizer.eos_token:
         print("Setting pad token.")
         tokenizer.add_special_tokens({'pad_token': '<|pad|>'})
         model.resize_token_embeddings(len(tokenizer))  # 반드시 tokenizer 추가 후 호출
         model.config.pad_token_id = tokenizer.pad_token_id
     print("✅ Tokenizer and model loaded.")
-
-    is_lora = os.path.isdir(args.model_id) and 'adapter_config.json' in os.listdir(args.model_id)
-    lora_weights = args.model_id if is_lora else None
-    
-    if is_lora:
-        print(f"🔍 Detected a fine-tuned LoRA model at: {args.model_id}")
-        config = PeftConfig.from_pretrained(args.model_id)
-        base_model_name = config.base_model_name_or_path
-        print(f"🔧 Loading base model: {base_model_name}")
-        print(f"Loading LoRA weights from {lora_weights}")
-        model = PeftModel.from_pretrained(model, lora_weights)
-        model = model.merge_and_unload()
 
 
     print("\n3. Loading and preparing dataset...")

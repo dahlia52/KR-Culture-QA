@@ -33,27 +33,26 @@ def parse_arguments():
 
 
 
-def make_prompt_for_data(question: str, choices: List[str], answer: str) -> str:
+def make_prompt_for_data(question: str, answer: str) -> str:
     template = """
     다음 선다형 문제를 서술형 문제로 변환하여 아래 형식으로 답하시오. 서술형 문제는 선택지 없이 서술하는 형태이며 질문은 간단하게 한 문장으로 구성되어야 합니다. 
     
     [선다형 문제]
     -질문 : {question}
-    -선택지 : {choices}
     -답변 : {answer}
 
     [서술형 문제]
     -질문: <question> ... </question>
     -답변: <answer> ... </answer>
     """
-    return template.format(question=question, choices=choices, answer=answer)
+    return template.format(question=question, answer=answer)
 
 
 def generate_data(args, pipe, result_data):
     prompts = []
     system_prompt = """당신은 한국의 전통 문화와 역사, 문법, 사회, 과학기술 등 다양한 분야에 대해 잘 알고 있는 유능한 AI 어시스턴트 입니다. 아래 지시에 따라 문제 형식을 변환하여 답하시오."""
     for item in tqdm.tqdm(result_data):
-        user_prompt = make_prompt_for_data(question=item['question'], choices=item['choices'], answer=item['answer'])
+        user_prompt = make_prompt_for_data(question=item['input']['question'], answer=item['output']['answer'])
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -69,14 +68,16 @@ def generate_data(args, pipe, result_data):
         try:
             generated_question = answer.split("<question>")[1].split("</question>")[0].strip()
             generated_answer = answer.split("<answer>")[1].split("</answer>")[0].strip()
-            result_data[idx]['input'] = {'question': generated_question}
-            result_data[idx]['output'] = {'answer': generated_answer}
+            result_data[idx]['input']['question_type'] = '서술형'
+            result_data[idx]['input']['question'] = generated_question
+            result_data[idx]['output']['answer'] = generated_answer
         except:
             try:
                 generated_question = answer.split("질문:")[1].split("답변:")[0].strip()
                 generated_answer = answer.split("답변:")[1].strip()
-                result_data[idx]['input'] = {'question': generated_question}
-                result_data[idx]['output'] = {'answer': generated_answer}
+                result_data[idx]['input']['question_type'] = '서술형'
+                result_data[idx]['input']['question'] = generated_question
+                result_data[idx]['output']['answer'] = generated_answer
             except:
                 print(f"===Failed to make generated {idx} question===")
                 print(answer)

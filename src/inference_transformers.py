@@ -1,11 +1,11 @@
 import os
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True" #나중에 없애기
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6,7"
 import gc
-import argparse
 import json
 import tqdm
 from typing import List, TypedDict, Optional
 import torch
-from datasets import load_from_disk
 from langchain.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
@@ -35,6 +35,8 @@ QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/result.json')
 log_filename = f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 logging.basicConfig(filename=log_filename, level=logging.INFO)
 
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(prog="test", description="Testing about Conversational Context Inference.")
 
@@ -54,6 +56,8 @@ def parse_arguments():
     g.add_argument("--retrieval_queries", action="store_true", help="Whether to use retrieval queries")
     g.add_argument("--k", type=int, default=2, help="Number of retrieved documents.")
     g.add_argument("--verified_context", action="store_true", help="Whether to use verified context")
+    g.add_argument("--rationale", action="store_true", help="Whether to use rationale")
+    g.add_argument("--split_rationale", action="store_true", help="Whether to use split rationale")
     return parser.parse_args()
 
 
@@ -62,7 +66,7 @@ def main():
     torch.cuda.empty_cache()
     torch.set_float32_matmul_precision('high')
     args = parse_arguments()
-    RETRIEVER_NAME = "BAAI/bge-m3"
+    RETRIEVER_NAME = "dragonkue/snowflake-arctic-embed-l-v2.0-ko" #"jinaai/jina-embeddings-v3" # "BAAI/bge-m3" #   #jinaai/jina-embeddings-v3
     GENERATOR_NAME = args.model_id
     base_model_name = args.model_id
 
@@ -108,17 +112,23 @@ def main():
     print("Starting QA Session")
     print("=" * 50)
     if args.self_reflection:
-        generate_for_self_reflection(args, retriever, pipe, result_data)
+        result_data = generate_for_self_reflection(args, retriever, pipe, result_data)
     elif args.logit:
-        generate_for_multiple_choice(args, retriever, pipe, result_data)
+        result_data = generate_for_multiple_choice(args, retriever, pipe, result_data)
     elif args.verify:
-        generate_with_verifier(args, retriever, pipe, result_data)
+        result_data = generate_with_verifier(args, retriever, pipe, result_data)
     elif args.retrieval_queries:
-        generate_with_retrieval_queries(args, retriever, pipe, result_data)
+        result_data = generate_with_retrieval_queries(args, retriever, pipe, result_data)
     elif args.verified_context:
-        generate_with_verified_context(args, retriever, pipe, result_data)
+        result_data = generate_with_verified_context(args, retriever, pipe, result_data)
+    elif args.rationale:
+        result_data = generate_with_rationale(args, retriever, pipe, result_data)
+    elif args.split_rationale:
+        result_data = generate_with_split_rationale(args, retriever, pipe, result_data)
     else:
-        generate(args, retriever, pipe, result_data)
+        result_data = generate(args, retriever, pipe, result_data)
+
+    save_dataset(result_data, args.output)
     print("\n" + "=" * 50)
     print("QA Session Completed")
     print("=" * 50)

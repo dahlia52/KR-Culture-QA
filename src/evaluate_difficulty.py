@@ -19,8 +19,8 @@ log_filename = f"difficulty_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 logging.basicConfig(filename=log_filename, level=logging.INFO)
 
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total+.json')
-QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total_difficulty_sorted.json')
+QA_DATASET_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형_to_서술형.json')
+QA_OUTPUT_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형_to_서술형_difficulty_sorted.json')
 
 
 def generate(pipe, result_data: List[Dict[str, Any]], args) -> List[Dict[str, Any]]:
@@ -121,7 +121,7 @@ def main():
 
     GENERATOR_NAME = args.model_id
     
-    pipe, tokenizer = load_llm(model_id=GENERATOR_NAME, device=args.device, quantize=False, batch_size=args.batch_size, is_lora=False, lora_weights=None, return_full_text=False)
+    pipe, tokenizer = load_llm(model_id=GENERATOR_NAME, base_model_name=GENERATOR_NAME, device=args.device, quantize=False, batch_size=args.batch_size, is_lora=False, lora_weights=None, return_full_text=False)
 
     logging.info("Generating answers...")
     result_data = generate(pipe, qa_data, args)

@@ -61,7 +61,7 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        max_new_tokens=2048,
+        max_new_tokens=4096, # 2048
         do_sample=True,
         top_p=0.9,
         top_k=30,
