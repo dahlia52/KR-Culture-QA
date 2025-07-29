@@ -19,4 +19,4 @@ pwd
 echo "Start Running"
 
 # 실행 명령어
-python src/inference_transformers_by_type_verify.py
+python src/inference_transformers_by_type_verify.py --model_id "./models/fine-tuned-model-선다형-단답형-서술형-NEW" --output "./resource/QA/final_verify_finetuned1.json"

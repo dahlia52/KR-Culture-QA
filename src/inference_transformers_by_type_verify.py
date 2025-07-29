@@ -94,7 +94,7 @@ def main():
     print("=" * 50)
     
 
-    GENERATOR = "./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW"
+    GENERATOR = args.model_id
     is_lora = os.path.isdir(GENERATOR) and 'adapter_config.json' in os.listdir(GENERATOR)
     lora_weights = GENERATOR if is_lora else None
     
