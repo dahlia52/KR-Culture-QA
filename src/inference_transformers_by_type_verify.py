@@ -1,23 +1,26 @@
 import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 import gc
 import argparse
 import json
 import tqdm
 from typing import List, TypedDict, Optional
 import torch
+torch.cuda.empty_cache()
+torch.cuda.reset_peak_memory_stats()
 import datasets
 from datasets import load_from_disk
 from langchain.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    pipeline,
-    BitsAndBytesConfig
-)
+# from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
+# from transformers import (
+#     AutoModelForCausalLM,
+#     AutoTokenizer,
+#     pipeline,
+#     BitsAndBytesConfig
+# )
 from make_prompt import *
 from retrieve import *
 from load import *

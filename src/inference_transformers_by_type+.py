@@ -115,18 +115,20 @@ def main():
     embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     mc_data = generate(args, retriever, pipe, mc_data)
+    print("Multiple Choice Completed")
 
     # Single Answer
     args.retrieve = False
     args.retrieve_adaptively = True
     retriever = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
     sa_data = generate(args, retriever, pipe, sa_data)
-
+    print("Single Answer Completed")
 
     # Descriptive
     args.retrieve_adaptively = False
     retriever = None #vector_store.as_retriever(search_kwargs={"k": 0})
     dc_data = generate(args, retriever, pipe, dc_data)
+    print("Descriptive Completed")
 
     result_data = mc_data + sa_data + dc_data
     result_data = sorted(result_data, key=lambda x: int(x['id']))
