@@ -27,7 +27,7 @@ DEFAULT_TRAIN_DATA_PATH2 = os.path.join(current_dir, 'resource/QA/split_by_type/
 DEFAULT_TRAIN_DATA_PATH3 = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total_difficulty_sorted_except_MC.json')
 DEFAULT_VALID_DATA_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형+단답형+서술형.json')
 
-DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model-rationale-선다형_to_서술형-sorted-NEW')
+DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW')
 
 
 K = 3
