@@ -24,13 +24,12 @@ current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_MODEL_ID = "K-intelligence/Midm-2.0-Base-Instruct"
 DEFAULT_TRAIN_DATA_PATH1 = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형_with_rationale_preprocessed.json')
 DEFAULT_TRAIN_DATA_PATH2 = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형_to_서술형.json')
-DEFAULT_TRAIN_DATA_PATH3 = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total_difficulty_sorted.json')
+DEFAULT_TRAIN_DATA_PATH3 = os.path.join(current_dir, 'resource/QA/korean_culture_qa_V1.0_total_difficulty_sorted_except_MC.json')
 DEFAULT_VALID_DATA_PATH = os.path.join(current_dir, 'resource/QA/split_by_type/korean_culture_qa_선다형+단답형+서술형.json')
 
 DEFAULT_OUTPUT_DIR = os.path.join(current_dir, 'models/fine-tuned-model-rationale-선다형_to_서술형-sorted-NEW')
-KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
-CHROMA_DB_PATH = os.path.join(current_dir, 'resource/retrieval_docs/chroma_db')
-RETRIEVER_NAME = "BAAI/bge-m3"
+
+
 K = 3
 
 def parse_arguments():
@@ -47,8 +46,6 @@ def parse_arguments():
     parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate")
 
     parser.add_argument("--evaluation", action="store_true", help="Evaluate validation set")
-    parser.add_argument("--retriever", type=str, default=RETRIEVER_NAME, help="Retriever name")
-    parser.add_argument("--retrieve", action="store_true", help="Use retrieval-augmented generation")
     parser.add_argument("--gpu_ids", type=str, default=None, help="Comma-separated list of GPU IDs to use (e.g., '0,1')")
 
     return parser.parse_args()
