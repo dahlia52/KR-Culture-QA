@@ -67,6 +67,7 @@ def main():
 
     print(f"Current device: {torch.cuda.get_device_name(0)}")
     print(f"Total VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
+    print("Log file: " + log_filename)
 
     device = torch.device(args.device)
     torch.cuda.reset_peak_memory_stats(device)
@@ -110,16 +111,20 @@ def main():
     print("✅ Language model pipeline loaded successfully.")
 
     # Multiple Choice
+    args.retrieve = True
     embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     mc_data = generate(args, retriever, pipe, mc_data)
 
     # Single Answer
+    args.retrieve = False
+    args.retrieve_adaptively = True
     retriever = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
     sa_data = generate(args, retriever, pipe, sa_data)
 
 
     # Descriptive
+    args.retrieve_adaptively = False
     retriever = None #vector_store.as_retriever(search_kwargs={"k": 0})
     dc_data = generate(args, retriever, pipe, dc_data)
 
