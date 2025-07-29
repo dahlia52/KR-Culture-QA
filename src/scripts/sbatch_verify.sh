@@ -1,4 +1,4 @@
-​#!/bin/sh
+#!/bin/sh
  
 #SBATCH -J inference_verify         
 #SBATCH -o src/inference_verify-%j.out   
