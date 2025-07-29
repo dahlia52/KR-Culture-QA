@@ -163,7 +163,6 @@ def main():
     print("=" * 50)
     print("Starting Fine-Tuning")
     print(f"Model ID: {args.model_id}")
-    print(f"Retrieval: {args.retrieve}")
     print("LoRA Fine-Tuning: Enabled")
     print(f"Epochs: {args.epochs}")
     print(f"Batch size: {args.batch_size}")
@@ -171,15 +170,6 @@ def main():
     print("=" * 50)
 
     retriever = None
-    if args.retrieve:
-        print("\n1. Loading retriever...")
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        retriever = load_retriever(model=RETRIEVER_NAME, device=device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=K)
-        if not retriever:
-            raise Exception("Failed to initialize retriever")
-        print("✅ Retriever loaded successfully.")
-
-
     tokenizer = AutoTokenizer.from_pretrained(args.model_id)
     tokenizer.padding_side = 'left'
 
@@ -212,7 +202,7 @@ def main():
 
 
     print("\n3. Loading and preparing dataset...")
-    full_train_dataset1, full_train_dataset2 = load_and_prepare_data(args.train_data_path1, args.train_data_path2, args.train_data_path3, tokenizer, retriever, args.retrieve)
+    full_train_dataset1, full_train_dataset2 = load_and_prepare_data(args.train_data_path1, args.train_data_path2, args.train_data_path3, tokenizer, retriever, False)
     train_dataset1 = full_train_dataset1.map(lambda example: {'text': example['text']}, remove_columns=list(full_train_dataset1.column_names))
     train_dataset1 = train_dataset1.map(lambda examples: tokenizer(examples['text'],
                                   padding=True, truncation = True, max_length=1024), 
@@ -225,7 +215,7 @@ def main():
 
     valid_dataset = None
     if args.evaluation:
-        full_valid_dataset = load_and_prepare_data(args.valid_data_path, tokenizer, retriever, args.retrieve)
+        full_valid_dataset = load_and_prepare_data(args.valid_data_path, tokenizer, retriever, False)
         valid_dataset = full_valid_dataset.map(lambda example: {'text': example['text']}, remove_columns=list(full_valid_dataset.column_names))
         valid_dataset = valid_dataset.map(lambda examples: tokenizer(examples['text'],
                                   padding=True, truncation = True, max_length=1024), 
