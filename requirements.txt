@@ -24,3 +24,4 @@ bert_score
 #bleurt
 sacrebleu
 peft
+pip install git+https://github.com/google-research/bleurt.git

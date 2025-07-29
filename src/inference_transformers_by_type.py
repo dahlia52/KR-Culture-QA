@@ -141,7 +141,7 @@ def main():
     #retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=args.k)
     args.retrieve = True
     vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
-    retriever = vector_store.as_retriever(search_kwargs={"k": 2})
+    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     
     if not retriever:
         raise Exception("Failed to initialize retriever")
@@ -181,7 +181,7 @@ def main():
     if not pipe_mc:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")
-    mc_data = generate_with_rationale(args, retriever, pipe_mc, mc_data)
+    mc_data = generate(args, retriever, pipe_mc, mc_data) # _with_rationale
 
     # Unload Multiple Choice model
     unload_model(pipe_mc, tokenizer_mc)
