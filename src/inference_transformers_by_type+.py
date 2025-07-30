@@ -1,4 +1,5 @@
 import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 import gc
 import argparse
 import json
@@ -119,6 +120,8 @@ def main():
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     mc_data = generate(args, retriever, pipe, mc_data)
     print("Multiple Choice Completed")
+    torch.cuda.empty_cache()
+    gc.collect()
 
     # Single Answer
     args.retrieve = False
@@ -126,12 +129,16 @@ def main():
     retriever = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
     sa_data = generate(args, retriever, pipe, sa_data)
     print("Single Answer Completed")
+    torch.cuda.empty_cache()
+    gc.collect()
 
     # Descriptive
     args.retrieve_adaptively = False
     retriever = None #vector_store.as_retriever(search_kwargs={"k": 0})
     dc_data = generate(args, retriever, pipe, dc_data)
     print("Descriptive Completed")
+    torch.cuda.empty_cache()
+    gc.collect()
 
     result_data = mc_data + sa_data + dc_data
     result_data = sorted(result_data, key=lambda x: int(x['id']))

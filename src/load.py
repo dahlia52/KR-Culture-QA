@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig, AutoConfig
 import logging
 import transformers
 import json
@@ -6,6 +6,7 @@ import os
 import torch
 from typing import List, Dict, Any, TypedDict, Optional
 from peft import PeftModel
+
 
 def load_dataset(file_path: str) -> List[Dict[str, Any]]:
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -78,11 +79,16 @@ def save_dataset(data: List[Dict[str, Any]], file_path: str) -> None:
 
 
 
+
 def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=2048):
     # Silence warnings
     logging.getLogger("transformers").setLevel(logging.ERROR)
     logging.getLogger("tokenizers").setLevel(logging.ERROR)
     transformers.logging.set_verbosity_error()
+
+    config = AutoConfig.from_pretrained(base_model_name)
+    config.use_cache = False
+    config.gradient_checkpointing = True
 
     # 1. Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
@@ -104,13 +110,14 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
     # 3. Load base model
     model = AutoModelForCausalLM.from_pretrained(
         base_model_name,
+        config=config,
         device_map=device,
-        torch_dtype=torch.float16,
         trust_remote_code=True,
         quantization_config=quant_config,
         low_cpu_mem_usage=True,
         ignore_mismatched_sizes=True
     )
+    model = model.to(device)
     print("✅ Base model loaded.")
 
     # 4. Apply LoRA if needed
