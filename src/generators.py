@@ -151,14 +151,10 @@ def generate(args, retriever, pipe, result_data):
 
     logging.info("Processing generated answers...")
     for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
         generated_text = output[0]['generated_text']
         answer = generated_text[-1]['content']
-
-        if 'ass' in answer:
-            answer = answer.split('ass')[0].strip()
-        if '\u0000' in answer:
-            answer = answer.split('\u0000')[0].strip()
+        answer = answer.replace("assistant", "")
+        answer = answer.replace("\u0000", "")
         if '답변:' in answer:
             answer = answer.split('답변:')[1].strip()
         result_data[idx]["input"]["context"] = contexts[idx].strip()
@@ -202,7 +198,6 @@ def generate_with_rationale(args, retriever, pipe, result_data):
             {"role": "user", "content": user_prompt}
         ]
         
-        # pipeline's tokenizer will apply the chat template
         prompts.append(messages)
 
     logging.info("Generating answers in batch...")
@@ -210,9 +205,12 @@ def generate_with_rationale(args, retriever, pipe, result_data):
 
     logging.info("Processing generated answers...")
     for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
         generated_text = output[0]['generated_text']
         answer = generated_text[-1]['content']
+        answer = answer.replace("assistant", "")
+        answer = answer.replace("\u0000", "")
+        if '답변:' in answer:
+            answer = answer.split('답변:')[1].strip()
         result_data[idx]["input"]["context"] = contexts[idx].strip()
         try:
             answer = generated_text[-1]['content'].split("<answer>")[1].split("</answer>")[0].replace('\n', '').strip()
@@ -266,7 +264,6 @@ def generate_for_self_reflection(args, retriever, pipe, result_data):
             {"role": "user", "content": user_prompt}
         ]
         
-        # pipeline's tokenizer will apply the chat template
         prompts.append(messages)
 
     logging.info("Generating answers in batch...")

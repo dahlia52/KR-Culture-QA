@@ -420,10 +420,10 @@ def final_answer_prompt_for_MC(topic_keyword: str, question: str, answer: str):
     [질문]
     {question}
 
-    [초안 답변]
+    [Rationale]
     {answer}
 
     [최종 정답]
-    숫자 하나만 답변하시오.
+    1,2,3,4,5와 같이 숫자 하나로만 답변하시오.
     """
     return verifier_prompt.format(instruction=instruction, topic_keyword=topic_keyword, question=question, answer=answer)

@@ -3,6 +3,7 @@ import logging
 import transformers
 import json
 import os
+import torch
 from typing import List, Dict, Any, TypedDict, Optional
 from peft import PeftModel
 
@@ -15,7 +16,7 @@ def save_dataset(data: List[Dict[str, Any]], file_path: str) -> None:
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=4096):
+def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=2048):
     tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
     tokenizer.padding_side = 'left'
     
@@ -30,13 +31,14 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
     if quantize:
         print("Quantizing model")
         quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
+            load_in_8bit=True,
             bnb_4bit_compute_dtype="float16",
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4"
         )
         model = AutoModelForCausalLM.from_pretrained(
             base_model_name,
+            torch_dtype=torch.float16,
             quantization_config=quantization_config,
             device_map=device,
             trust_remote_code=True
@@ -44,6 +46,7 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
     else:
         model = AutoModelForCausalLM.from_pretrained(
             base_model_name,
+            torch_dtype=torch.float16,
             device_map=device,
             trust_remote_code=True,
             ignore_mismatched_sizes=True

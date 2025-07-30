@@ -58,54 +58,6 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def generate(args, retrieve, retriever, pipe, result_data):
-    logging.info("### Generate answers ###")
-    prompts = []
-    system_prompt = make_system_prompt()
-    
-    logging.info("Preparing prompts...")
-    
-    for item in tqdm.tqdm(result_data):
-        question = item["input"]["question"]
-        question_type = item["input"]["question_type"]
-        topic_keyword = item["input"]["topic_keyword"]
-
-        context = ""
-        if retrieve:
-            context = retrieve_documents(topic_keyword, question, retriever)
-        
-        user_prompt = make_prompt(
-            question_type=question_type,
-            category=item["input"]["category"],
-            domain=item["input"]["domain"],
-            topic_keyword=topic_keyword,
-            context=context,
-            question=question,
-            fewshot=False,
-            retrieve = retrieve
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        # pipeline's tokenizer will apply the chat template
-        prompts.append(messages)
-
-    logging.info("Generating answers in batch...")
-    outputs = pipe(prompts)
-
-    logging.info("Processing generated answers...")
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
-        generated_text = output[0]['generated_text']
-        answer = generated_text[-1]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
-
-    return result_data
-
-
 def unload_model(pipe, tokenizer):
     """Safely unload a model and clear GPU memory"""
     if pipe is not None:
@@ -138,7 +90,6 @@ def main():
     print("Starting Korean Culture QA System")
     print("=" * 50)
     
-    #retriever = load_retriever(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH, k=args.k)
     args.retrieve = True
     vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
