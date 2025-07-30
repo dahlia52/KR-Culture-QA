@@ -205,7 +205,7 @@ def load_vector_store(model, device, chroma_db_path, kowiki_dataset_path) -> Opt
     
     embeddings = HuggingFaceEmbeddings(
         model_name=model,
-        model_kwargs={"device": device, "trust_remote_code": True},
+        model_kwargs={"device": device, "torch_dtype": torch.float16, "trust_remote_code": True},
         encode_kwargs={"normalize_embeddings": True}
     )
     
