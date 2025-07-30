@@ -98,7 +98,16 @@ def main():
 
     args.retrieve = True
     embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
-    
+
+    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
+    contexts_mc = make_contexts(args, retriever, mc_data)
+    contexts_sa = make_contexts(args, retriever, sa_data)
+    contexts_dc = make_contexts(args, retriever, dc_data)
+
+    del embeddings
+    del vector_store
+    torch.cuda.empty_cache()
+    gc.collect()
 
     GENERATOR = args.model_id
     base_model_name = args.model_id
@@ -117,17 +126,16 @@ def main():
     print("✅ Language model pipeline loaded successfully.")
 
     # Multiple Choice
-    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
-    mc_data = generate(args, retriever, pipe, mc_data)
+    mc_data = generate(args, retriever, pipe, mc_data, contexts_mc)
     print("Multiple Choice Completed")
     torch.cuda.empty_cache()
     gc.collect()
-
+    
     # Single Answer
     args.retrieve = False
     args.retrieve_adaptively = True
     retriever = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
-    sa_data = generate(args, retriever, pipe, sa_data)
+    sa_data = generate(args, retriever, pipe, sa_data, contexts_sa)
     print("Single Answer Completed")
     torch.cuda.empty_cache()
     gc.collect()
@@ -135,7 +143,7 @@ def main():
     # Descriptive
     args.retrieve_adaptively = False
     retriever = None #vector_store.as_retriever(search_kwargs={"k": 0})
-    dc_data = generate(args, retriever, pipe, dc_data)
+    dc_data = generate(args, retriever, pipe, dc_data, contexts_dc)
     print("Descriptive Completed")
     torch.cuda.empty_cache()
     gc.collect()

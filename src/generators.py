@@ -21,118 +21,24 @@ from retrieve import *
 import logging
 from load import save_dataset
 
-# Retrieve Query Rewriting
-def generate_with_retrieval_queries(args, retriever, pipe, result_data):
-    logging.info("### Generate with retrieval queries ###")
-    if args.retrieve or args.retrieve_adaptively:
-        contexts = []
-        system_prompt = make_system_prompt_for_retrieval()
-        logging.info("Rewriting retrieval queries...")
 
-        for item in tqdm.tqdm(result_data):
-            question = item["input"]["question"]
-            topic_keyword = item["input"]["topic_keyword"]
-
-            user_prompt = make_prompt_for_retrieval(
-                topic_keyword=topic_keyword,
-                question=question,
-            )
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
-            
-            # pipeline's tokenizer will apply the chat template
-            contexts.append(messages)
-
-        outputs = pipe(contexts)
-        
-        queries = []
-        for idx, output in enumerate(tqdm.tqdm(outputs)):
-            try:
-                answer = output[0]['generated_text'][-1]['content'].split("<answer>")[1].split("</answer>")[0].replace('\n', '').strip()
-            
-            except:
-                try:
-                    answer = output[0]['generated_text'][-1]['content'].split("<answer>")[1].replace('\n', '').strip()
-                except:
-                        answer = output[0]['generated_text'][-1]['content'].replace('\n', '').strip()
-
-            queries.append(answer)
-
+# Generate Answers
+def generate(args, retriever, pipe, result_data, contexts):
+    logging.info("### Generate answers ###")
     prompts = []
     system_prompt = make_system_prompt()
     
     logging.info("Preparing prompts...")
+    
     for idx, item in tqdm.tqdm(enumerate(result_data)):
         question = item["input"]["question"]
         topic_keyword = item["input"]["topic_keyword"]
-        context = ""
-        logging.info("=" * 50)
-        logging.info(f"Rewrited query: {queries[idx]}")
-        logging.info(f"Question: {question}")
-        logging.info(f"Topic keyword: {topic_keyword}")
-        if args.retrieve or args.retrieve_adaptively:
-            context = retrieve_documents_with_rewritten_query(queries[idx], retriever)
-        
         user_prompt = make_prompt(
             question_type=item["input"]["question_type"],
             category=item["input"]["category"],
             domain=item["input"]["domain"],
             topic_keyword=topic_keyword,
-            context=context,
-            question=question,
-            fewshot=True,
-            retrieve = args.retrieve or args.retrieve_adaptively
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        # pipeline's tokenizer will apply the chat template
-        prompts.append(messages)
-
-    logging.info("Generating answers in batch...")
-    outputs = pipe(prompts)
-
-    logging.info("Processing generated answers...")
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
-        generated_text = output[0]['generated_text']
-        answer = generated_text[-1]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
-
-    return result_data
-
-
-
-# Generate Answers
-def generate(args, retriever, pipe, result_data):
-    logging.info("### Generate answers ###")
-    prompts = []
-    contexts = []
-    system_prompt = make_system_prompt()
-    
-    logging.info("Preparing prompts...")
-    
-    for item in tqdm.tqdm(result_data):
-        question = item["input"]["question"]
-        topic_keyword = item["input"]["topic_keyword"]
-
-        context = ""
-        if args.retrieve or args.retrieve_adaptively:
-            context = retrieve_documents(topic_keyword, question, retriever)
-        
-        contexts.append(context)
-        
-        user_prompt = make_prompt(
-            question_type=item["input"]["question_type"],
-            category=item["input"]["category"],
-            domain=item["input"]["domain"],
-            topic_keyword=topic_keyword,
-            context=context,
+            context=contexts[idx],
             question=question,
             fewshot=True,
             retrieve = args.retrieve or args.retrieve_adaptively
@@ -584,50 +490,6 @@ def generate_with_verifier(args, retriever, pipe, result_data):
     logging.info(f"Regenerated Answers: {regenerate_idx}")
     return result_data
 
-
-def verify_context(args, retriever, pipe, result_data):
-    logging.info("### Verify context ###")
-    system_prompt = make_system_prompt()
-    
-    logging.info("Preparing prompts...")
-    
-    for item in tqdm.tqdm(result_data):
-        prompts = []
-        question = item["input"]["question"]
-        topic_keyword = item["input"]["topic_keyword"]
-        context = ""
-
-        documents = retriever.invoke(topic_keyword + ": " + question)
-        for document in documents:        
-            user_prompt = make_prompt_for_context(
-                topic_keyword=topic_keyword,
-                question=question,
-                context=document
-            )  
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ]
-            prompts.append(messages)
-
-        logging.info("Generating answers in batch...")
-        outputs = pipe(prompts)
-
-        logging.info("Processing generated answers...")
-        cnt = 0
-        for idx, output in enumerate(tqdm.tqdm(outputs)):
-            # The output from the pipeline is a list with a dictionary
-            generated_text = output[0]['generated_text']
-            answer = generated_text[-1]['content']
-            print(answer)
-
-            if answer[0] == "예":
-                context = context + documents[idx].page_content + '\n\n'
-                cnt += 1
-
-        item["output"] = {"context": context.strip()}
-        logging.info(f"Number of retrieved documents: {cnt}")
-    return result_data
 
 
 # Generate Answers

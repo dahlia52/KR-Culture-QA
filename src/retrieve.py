@@ -5,12 +5,13 @@ from langchain_core.documents import Document
 from langchain.embeddings.base import Embeddings
 from langchain_huggingface import HuggingFaceEmbeddings
 from typing import List, TypedDict, Optional
-from make_prompt import format_docs, make_prompt_for_retrieval
+from make_prompt import format_docs
 import logging
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from datasets import load_from_disk
 import torch
 from sentence_transformers import SentenceTransformer
+import tqdm
 
 # def retrieve_documents(state: GraphState) -> GraphState:
 #     print("---RETRIEVING DOCUMENTS---")
@@ -41,12 +42,18 @@ def retrieve_documents(topic_keyword, question, retriever):
     context = format_docs(documents)
     return context
 
+def make_contexts(args, retriever, result_data):
+    contexts = []
+    for item in tqdm.tqdm(result_data):
+        question = item["input"]["question"]
+        topic_keyword = item["input"]["topic_keyword"]
 
-def retrieve_documents_with_rewritten_query(question, retriever):
-    documents = retriever.invoke(question)
-    logging.info(f"Number of retrieved documents: {len(documents)}")
-    context = format_docs(documents)
-    return context
+        context = ""
+        if args.retrieve or args.retrieve_adaptively:
+            context = retrieve_documents(topic_keyword, question, retriever)
+        contexts.append(context)
+    return contexts
+
 
 
 def load_retriever(model, device, chroma_db_path, kowiki_dataset_path, k=3) -> Optional[Chroma]:
@@ -221,7 +228,7 @@ class BF16SentenceTransformerEmbeddings(Embeddings):
     def embed_query(self, text):
         embedding = self.model.encode(text, convert_to_tensor=True, device=str(self.device))
         return embedding.cpu().tolist()
-        
+
 
 
 def load_vector_store(model, device, chroma_db_path, kowiki_dataset_path) -> Optional[Chroma]:
