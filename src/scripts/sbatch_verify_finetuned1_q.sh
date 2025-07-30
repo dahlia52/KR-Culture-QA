@@ -1,7 +1,7 @@
 #!/bin/sh
  
 #SBATCH -J inference_verify         
-#SBATCH -o src/inference_verify-%j.out   
+#SBATCH -o /home/wisdomjeong/KR-Culture-QA/log/inference_verify-%j.out   
 #SBATCH -p RTX4090         
 #SBATCH -t 3-00:00:00            
 #SBATCH --gres=gpu:1
