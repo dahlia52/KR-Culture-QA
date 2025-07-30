@@ -96,6 +96,7 @@ def main():
     
 
     GENERATOR = args.model_id
+    base_model_name = args.model_id
     is_lora = os.path.isdir(GENERATOR) and 'adapter_config.json' in os.listdir(GENERATOR)
     lora_weights = GENERATOR if is_lora else None
     

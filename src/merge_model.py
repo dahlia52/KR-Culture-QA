@@ -32,4 +32,5 @@ if is_lora and lora_weights:
     model = model.merge_and_unload()
     model = model.half()
 
-model.save_pretrained("./models/fine-tuned-model-선다형-단답형-서술형-NEW-merged-float16")
+#model.save_pretrained("./models/fine-tuned-model-선다형-단답형-서술형-NEW-merged-float16")
+tokenizer.save_pretrained("./models/fine-tuned-model-선다형-단답형-서술형-NEW-merged-float16")
