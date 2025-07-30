@@ -12,7 +12,7 @@
 
 # 환경 설정
 echo "Activate conda"
-source /home/wisdomjeong/mniconda3/bin/activate kcqa
+source /home/wisdomjeong/miniconda3/bin/activate kcqa
 cd /home/wisdomjeong/KR-Culture-QA
 pwd
 
