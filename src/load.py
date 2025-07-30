@@ -80,7 +80,7 @@ def save_dataset(data: List[Dict[str, Any]], file_path: str) -> None:
 
 
 
-def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=2048):
+def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=2048, temperature = 0.8):
     # Silence warnings
     logging.getLogger("transformers").setLevel(logging.ERROR)
     logging.getLogger("tokenizers").setLevel(logging.ERROR)
@@ -106,6 +106,12 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
             llm_int8_threshold=6.0,
             llm_int8_has_fp16_weight=False  # reduces memory peak
         )
+        # quant_config = BitsAndBytesConfig(
+        #     load_in_4bit=True,
+        #     bnb_4bit_compute_dtype="float16",
+        #     bnb_4bit_use_double_quant=True,
+        #     bnb_4bit_quant_type="nf4"
+        # )
 
     # 3. Load base model
     model = AutoModelForCausalLM.from_pretrained(
@@ -117,7 +123,6 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
         low_cpu_mem_usage=True,
         ignore_mismatched_sizes=True
     )
-    model = model.to(device)
     print("✅ Base model loaded.")
 
     # 4. Apply LoRA if needed
@@ -144,7 +149,7 @@ def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is
         do_sample=True,
         top_p=0.9,
         top_k=30,
-        temperature=0.8,
+        temperature=temperature,
         batch_size=batch_size,
         return_full_text=return_full_text,
         eos_token_id=tokenizer.eos_token_id,

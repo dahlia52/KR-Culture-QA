@@ -55,8 +55,8 @@ def parse_arguments():
     g.add_argument("--verify", action="store_true", help="Whether to use verifier")
     g.add_argument("--retrieval_queries", action="store_true", help="Whether to use retrieval queries")
     g.add_argument("--k", type=int, default=2, help="Number of retrieved documents.")
-    g.add_argument("--verified_context", action="store_true", help="Whether to use verified context")
     g.add_argument("--rationale", action="store_true", help="Whether to use rationale")
+    g.add_argument("--temperature", type=float, default=0.8, help="Temperature for generation")
     return parser.parse_args()
 
 
@@ -102,7 +102,6 @@ def main():
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     contexts_mc = make_contexts(args, retriever, mc_data)
     contexts_sa = make_contexts(args, retriever, sa_data)
-    contexts_dc = make_contexts(args, retriever, dc_data)
 
     del embeddings
     del vector_store
@@ -120,13 +119,15 @@ def main():
         base_model_name = config.base_model_name_or_path
         print(f"🔧 Loading base model: {base_model_name}")
     
-    pipe, tokenizer = load_llm(model_id=GENERATOR, base_model_name=base_model_name, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights)
+    pipe, tokenizer = load_llm(model_id=GENERATOR, base_model_name=base_model_name, device=args.device, quantize=args.quantize, batch_size=args.batch_size, is_lora=is_lora, lora_weights=lora_weights, temperature=args.temperature)
     if not pipe:
         raise Exception("Failed to initialize language model pipeline")
     print("✅ Language model pipeline loaded successfully.")
 
     # Multiple Choice
-    mc_data = generate(args, retriever, pipe, mc_data, contexts_mc)
+    mc_data = generate_with_rationale(args, retriever, pipe, mc_data, contexts_mc)
+    if args.verify:
+        mc_data = generate_final(args, pipe, mc_data)
     print("Multiple Choice Completed")
     torch.cuda.empty_cache()
     gc.collect()
@@ -143,7 +144,7 @@ def main():
     # Descriptive
     args.retrieve_adaptively = False
     retriever = None #vector_store.as_retriever(search_kwargs={"k": 0})
-    dc_data = generate(args, retriever, pipe, dc_data, contexts_dc)
+    dc_data = generate(args, retriever, pipe, dc_data, None)
     print("Descriptive Completed")
     torch.cuda.empty_cache()
     gc.collect()

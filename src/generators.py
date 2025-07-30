@@ -22,8 +22,82 @@ import logging
 from load import save_dataset
 
 
+def generate(args, retriever, pipe, result_data):
+    logging.info("### Generate answers ###")
+    prompts = []
+    system_prompt = make_system_prompt()
+    
+    logging.info("Preparing prompts...")
+    contexts = []
+    regenerate_idx = []
+    for idx, item in tqdm.tqdm(enumerate(result_data)):
+        question = item["input"]["question"]
+        topic_keyword = item["input"]["topic_keyword"]
+        context = ""
+        
+        if args.retrieve or args.retrieve_adaptively:
+            context = retrieve_documents(topic_keyword, question, retriever)
+        user_prompt = make_prompt(
+            question_type=item["input"]["question_type"],
+            category=item["input"]["category"],
+            domain=item["input"]["domain"],
+            topic_keyword=topic_keyword,
+            context=context,
+            question=question,
+            fewshot=True,
+            retrieve = args.retrieve or args.retrieve_adaptively
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        # pipeline's tokenizer will apply the chat template
+        prompts.append(messages)
+        contexts.append(context)
+
+    logging.info("Generating answers in batch...")
+    outputs = pipe(prompts)
+
+    logging.info("Processing generated answers...")
+    for idx, output in enumerate(tqdm.tqdm(outputs)):
+        generated_text = output[0]['generated_text']
+        answer = generated_text[-1]['content']
+        try:
+            answer = answer.replace("assistant", "")
+            answer = answer.replace("\u0000", "")
+            if '답변:' in answer:
+                answer = answer.split('답변:')[1].strip()
+        except:
+            pass
+        if answer is None or answer == "":
+            regenerate_idx.append(idx)
+        result_data[idx]["input"]["context"] = contexts[idx].strip()
+        result_data[idx]["output"] = {"answer": answer.strip()}
+
+    if regenerate_idx:
+        regenerate_prompts = [prompts[idx] for idx in regenerate_idx]
+        outputs = pipe(regenerate_prompts)
+        for idx, output in enumerate(tqdm.tqdm(outputs)):
+            generated_text = output[0]['generated_text']
+            answer = generated_text[-1]['content']
+            try:
+                answer = answer.replace("assistant", "")
+                answer = answer.replace("\u0000", "")
+                if '답변:' in answer:
+                    answer = answer.split('답변:')[1].strip()
+            except:
+                pass
+            result_data[regenerate_idx[idx]]["input"]["context"] = contexts[regenerate_idx[idx]].strip()
+            result_data[regenerate_idx[idx]]["output"] = {"answer": answer.strip()}
+
+    return result_data
+
+
+
 # Generate Answers
-def generate(args, retriever, pipe, result_data, contexts):
+def generate_by_type(args, retriever, pipe, result_data, contexts):
     logging.info("### Generate answers ###")
     prompts = []
     system_prompt = make_system_prompt()
@@ -38,7 +112,7 @@ def generate(args, retriever, pipe, result_data, contexts):
             category=item["input"]["category"],
             domain=item["input"]["domain"],
             topic_keyword=topic_keyword,
-            context=contexts[idx],
+            context=contexts[idx] if contexts else "",
             question=question,
             fewshot=True,
             retrieve = args.retrieve or args.retrieve_adaptively
@@ -70,30 +144,22 @@ def generate(args, retriever, pipe, result_data, contexts):
 
 
 # Generate Answers
-def generate_with_rationale(args, retriever, pipe, result_data):
+def generate_with_rationale(args, retriever, pipe, result_data, contexts):
     logging.info("### Generate answers ###")
     prompts = []
-    contexts = []
     system_prompt = make_system_prompt()
     
     logging.info("Preparing prompts...")
     
-    for item in tqdm.tqdm(result_data):
+    for idx, item in tqdm.tqdm(enumerate(result_data)):
         question = item["input"]["question"]
         topic_keyword = item["input"]["topic_keyword"]
-
-        context = ""
-        if args.retrieve or args.retrieve_adaptively:
-            context = retrieve_documents(topic_keyword, question, retriever)
-        
-        contexts.append(context)
-        
         user_prompt = make_prompt_for_rationale(
             question_type=item["input"]["question_type"],
             category=item["input"]["category"],
             domain=item["input"]["domain"],
             topic_keyword=topic_keyword,
-            context=context,
+            context=contexts[idx] if contexts else "",
             question=question,
             fewshot=True,
             retrieve = args.retrieve or args.retrieve_adaptively

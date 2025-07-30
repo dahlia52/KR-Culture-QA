@@ -399,17 +399,6 @@ def make_prompt_for_context(topic_keyword: str, question: str, context: str):
 
 
 
-def make_prompt_for_kiip(question: str) -> str:
-    template = """
-        [질문]
-        {question}
-
-        [답변]
-        """
-    return template.format(question=question)
-
-
-
 def final_answer_prompt_for_MC(topic_keyword: str, question: str, answer: str):
     instruction = type_instructions.get("선다형", "")
     verifier_prompt = """{instruction}

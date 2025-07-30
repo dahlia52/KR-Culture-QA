@@ -208,26 +208,26 @@ def load_retriever_adaptively(model, device, chroma_db_path, kowiki_dataset_path
 
 
 
-class BF16SentenceTransformerEmbeddings(Embeddings):
-    def __init__(self, model_name: str, device: str = "cuda"):
-        self.device = torch.device(device)
-        self.model = SentenceTransformer(model_name)
-        self.model = self.model.to(self.device)  # 디바이스 먼저
-        for param in self.model.parameters():
-            param.data = param.data.to(dtype=torch.bfloat16)  # bf16으로 수동 변환
+# class BF16SentenceTransformerEmbeddings(Embeddings):
+#     def __init__(self, model_name: str, device: str = "cuda"):
+#         self.device = torch.device(device)
+#         self.model = SentenceTransformer(model_name)
+#         self.model = self.model.to(self.device)  # 디바이스 먼저
+#         for param in self.model.parameters():
+#             param.data = param.data.to(dtype=torch.bfloat16)  # bf16으로 수동 변환
 
-    def to(self, device: str):
-        self.device = torch.device(device)
-        self.model = self.model.to(self.device)
-        return self
+#     def to(self, device: str):
+#         self.device = torch.device(device)
+#         self.model = self.model.to(self.device)
+#         return self
 
-    def embed_documents(self, texts):
-        embeddings = self.model.encode(texts, convert_to_tensor=True, device=str(self.device))
-        return embeddings.cpu().tolist()
+#     def embed_documents(self, texts):
+#         embeddings = self.model.encode(texts, convert_to_tensor=True, device=str(self.device))
+#         return embeddings.cpu().tolist()
 
-    def embed_query(self, text):
-        embedding = self.model.encode(text, convert_to_tensor=True, device=str(self.device))
-        return embedding.cpu().tolist()
+#     def embed_query(self, text):
+#         embedding = self.model.encode(text, convert_to_tensor=True, device=str(self.device))
+#         return embedding.cpu().tolist()
 
 
 
@@ -235,12 +235,12 @@ def load_vector_store(model, device, chroma_db_path, kowiki_dataset_path) -> Opt
     # Initialize embeddings
     print("Loading embeddings...")
 
-    # embeddings = HuggingFaceEmbeddings(
-    #     model_name=model,
-    #     model_kwargs={"device": device, "torch_dtype": torch.float16, "trust_remote_code": True},
-    #     encode_kwargs={"normalize_embeddings": True}
-    # )
-    embeddings = BF16SentenceTransformerEmbeddings(model, device)
+    embeddings = HuggingFaceEmbeddings(
+        model_name=model,
+        model_kwargs={"device": device, "trust_remote_code": True},
+        encode_kwargs={"normalize_embeddings": True}
+    )
+    # embeddings = BF16SentenceTransformerEmbeddings(model, device)
 
     # Load or create ChromaDB
     if os.path.exists(chroma_db_path):
