@@ -8,6 +8,7 @@ from make_prompt import format_docs, make_prompt_for_retrieval
 import logging
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from datasets import load_from_disk
+import torch
 
 # def retrieve_documents(state: GraphState) -> GraphState:
 #     print("---RETRIEVING DOCUMENTS---")
