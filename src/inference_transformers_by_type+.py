@@ -26,6 +26,7 @@ import logging
 from datetime import datetime
 from peft import PeftModel, PeftConfig
 
+
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
@@ -93,6 +94,9 @@ def main():
     print("\n" + "=" * 50)
     print("Starting QA Session")
     print("=" * 50)
+
+    args.retrieve = True
+    embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
     
 
     GENERATOR = args.model_id
@@ -112,8 +116,6 @@ def main():
     print("✅ Language model pipeline loaded successfully.")
 
     # Multiple Choice
-    args.retrieve = True
-    embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     mc_data = generate(args, retriever, pipe, mc_data)
     print("Multiple Choice Completed")

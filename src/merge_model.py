@@ -1,9 +1,10 @@
 from peft import PeftModel, PeftConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
+import torch
 
-#GENERATOR = "./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW"
-GENERATOR = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
+GENERATOR = "./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW"
+#GENERATOR = "./models/fine-tuned-model-선다형-단답형-서술형-NEW"
 
 is_lora = os.path.isdir(GENERATOR) and 'adapter_config.json' in os.listdir(GENERATOR)
 lora_weights = GENERATOR if is_lora else None
@@ -19,7 +20,7 @@ tokenizer.padding_side = 'left'
 
 model = AutoModelForCausalLM.from_pretrained(
             base_model_name,
-            device_map="cuda:1",
+            device_map="cuda:0",
             trust_remote_code=True,
             ignore_mismatched_sizes=True
         )
@@ -30,7 +31,7 @@ if is_lora and lora_weights:
     print(f"Loading LoRA weights from {lora_weights}")
     model = PeftModel.from_pretrained(model, lora_weights)
     model = model.merge_and_unload()
-    model = model.half()
+    model = model.to(torch.bfloat16)
 
-#model.save_pretrained("./models/fine-tuned-model-선다형-단답형-서술형-NEW-merged-float16")
-tokenizer.save_pretrained("./models/fine-tuned-model-선다형-단답형-서술형-NEW-merged-float16")
+model.save_pretrained("./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW-merged-bf16")
+tokenizer.save_pretrained("./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW-merged-bf16")

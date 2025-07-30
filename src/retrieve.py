@@ -9,6 +9,7 @@ import logging
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from datasets import load_from_disk
 import torch
+from sentence_transformers import SentenceTransformer
 
 # def retrieve_documents(state: GraphState) -> GraphState:
 #     print("---RETRIEVING DOCUMENTS---")
@@ -203,7 +204,8 @@ def load_retriever_adaptively(model, device, chroma_db_path, kowiki_dataset_path
 def load_vector_store(model, device, chroma_db_path, kowiki_dataset_path) -> Optional[Chroma]:
     # Initialize embeddings
     print("Loading embeddings...")
-    
+    model = SentenceTransformer(model).to(torch.bfloat16)
+
     embeddings = HuggingFaceEmbeddings(
         model_name=model,
         model_kwargs={"device": device, "torch_dtype": torch.float16, "trust_remote_code": True},

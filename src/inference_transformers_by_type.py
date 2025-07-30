@@ -26,6 +26,7 @@ import logging
 from datetime import datetime
 from peft import PeftModel, PeftConfig
 
+
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KOWIKI_DATASET_PATH = os.path.join(current_dir, 'resource/retrieval_docs/kowiki_dataset')
