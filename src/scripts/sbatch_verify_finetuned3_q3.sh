@@ -19,4 +19,4 @@ pwd
 echo "Start Running"
 
 # 실행 명령어
-python src/inference_transformers_by_type+.py --model_id "./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW-merged-bf16" --output "./resource/QA/final_verify_finetuned3_q_0.json" --quantize --temperature 0.1 --verify
+python src/inference_transformers_by_type+.py --model_id "./models/fine-tuned-model-rationale-선다형_to_서술형-sorted-without-MC-NEW-merged-bf16" --output "./resource/QA/sbatch/final_verify_finetuned3_q_0.json" --quantize --temperature 0.1 --verify
