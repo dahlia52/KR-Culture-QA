@@ -27,6 +27,11 @@ import logging
 from datetime import datetime
 from peft import PeftModel, PeftConfig
 
+import random
+import numpy as np
+
+
+
 
 # Get the project root directory (one level up from src)
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -57,7 +62,17 @@ def parse_arguments():
     g.add_argument("--k", type=int, default=2, help="Number of retrieved documents.")
     g.add_argument("--rationale", action="store_true", help="Whether to use rationale")
     g.add_argument("--temperature", type=float, default=0.8, help="Temperature for generation")
+    g.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     return parser.parse_args()
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def main():
@@ -65,6 +80,7 @@ def main():
     torch.cuda.empty_cache()
     torch.set_float32_matmul_precision('high')
     args = parse_arguments()
+    set_seed(args.seed)
     RETRIEVER_NAME = "dragonkue/snowflake-arctic-embed-l-v2.0-ko"
 
     print(f"Current device: {torch.cuda.get_device_name(0)}")
