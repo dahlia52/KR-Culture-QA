@@ -97,7 +97,7 @@ def generate(args, retriever, pipe, result_data):
 
 
 # Generate Answers
-def generate_by_type(args, retriever, pipe, result_data, contexts):
+def generate_for_type(args, retriever, pipe, result_data, contexts):
     logging.info("### Generate answers ###")
     prompts = []
     system_prompt = make_system_prompt()

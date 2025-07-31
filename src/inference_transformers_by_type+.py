@@ -136,7 +136,7 @@ def main():
     args.retrieve = False
     args.retrieve_adaptively = True
     retriever = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
-    sa_data = generate(args, retriever, pipe, sa_data, contexts_sa)
+    sa_data = generate_for_type(args, retriever, pipe, sa_data, contexts_sa)
     print("Single Answer Completed")
     torch.cuda.empty_cache()
     gc.collect()
@@ -144,7 +144,7 @@ def main():
     # Descriptive
     args.retrieve_adaptively = False
     retriever = None #vector_store.as_retriever(search_kwargs={"k": 0})
-    dc_data = generate(args, retriever, pipe, dc_data, None)
+    dc_data = generate_for_type(args, retriever, pipe, dc_data, None)
     print("Descriptive Completed")
     torch.cuda.empty_cache()
     gc.collect()
