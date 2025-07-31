@@ -137,7 +137,7 @@ def generate_for_type(args, retriever, pipe, result_data, contexts):
         answer = answer.replace("\u0000", "")
         if '답변:' in answer:
             answer = answer.split('답변:')[1].strip()
-        result_data[idx]["input"]["context"] = contexts[idx].strip()
+        result_data[idx]["input"]["context"] = contexts[idx].strip() if contexts else ""
         result_data[idx]["output"] = {"answer": answer.strip()}
 
     return result_data
@@ -183,7 +183,7 @@ def generate_with_rationale(args, retriever, pipe, result_data, contexts):
         answer = answer.replace("\u0000", "")
         if '답변:' in answer:
             answer = answer.split('답변:')[1].strip()
-        result_data[idx]["input"]["context"] = contexts[idx].strip()
+        result_data[idx]["input"]["context"] = contexts[idx].strip() if contexts else ""
         try:
             answer = generated_text[-1]['content'].split("<answer>")[1].split("</answer>")[0].replace('\n', '').strip()
             

@@ -80,7 +80,7 @@ def save_dataset(data: List[Dict[str, Any]], file_path: str) -> None:
 
 
 
-def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=2048, temperature = 0.8):
+def load_llm(model_id, base_model_name, device, quantize=False, batch_size=1, is_lora=False, lora_weights=None, return_full_text=True, max_new_tokens=1024, temperature = 0.8):
     # Silence warnings
     logging.getLogger("transformers").setLevel(logging.ERROR)
     logging.getLogger("tokenizers").setLevel(logging.ERROR)
