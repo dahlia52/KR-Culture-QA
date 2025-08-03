@@ -59,7 +59,7 @@ def parse_arguments():
     g.add_argument("--self_reflection", action="store_true", help="Whether to use self-reflection")
     g.add_argument("--verify", action="store_true", help="Whether to use verifier")
     g.add_argument("--retrieval_queries", action="store_true", help="Whether to use retrieval queries")
-    g.add_argument("--k", type=int, default=2, help="Number of retrieved documents.")
+    g.add_argument("--k", type=int, default=1, help="Number of retrieved documents.")
     g.add_argument("--rationale", action="store_true", help="Whether to use rationale")
     g.add_argument("--temperature", type=float, default=0.8, help="Temperature for generation")
     g.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
@@ -115,7 +115,7 @@ def main():
     args.retrieve = True
     embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
 
-    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
+    retriever = vector_store.as_retriever(search_kwargs={"k": args.k})
     contexts_mc = make_contexts(args, retriever, mc_data)
     contexts_sa = make_contexts(args, retriever, sa_data)
 

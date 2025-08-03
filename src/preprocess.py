@@ -90,7 +90,7 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     
-    input_file = os.path.join(project_root, 'resource', 'QA', 'final_verify_finetuned1.json')
-    output_file = os.path.join(project_root, 'resource', 'QA', 'final_verify_finetuned1_preprocessed.json')
+    input_file = os.path.join(project_root, 'resource', 'QA', 'final_try', 'final_verify_finetuned1_q_0.3_777_k10_k8.json')
+    output_file = os.path.join(project_root, 'resource', 'QA', 'final_try', 'final_verify_finetuned1_q_0.3_777_k10_k8_preprocessed.json')
     
     preprocess_data(input_file, output_file)

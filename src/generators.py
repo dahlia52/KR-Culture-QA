@@ -179,22 +179,25 @@ def generate_with_rationale(args, retriever, pipe, result_data, contexts):
     for idx, output in enumerate(tqdm.tqdm(outputs)):
         generated_text = output[0]['generated_text']
         answer = generated_text[-1]['content']
-        answer = answer.replace("assistant", "")
-        answer = answer.replace("\u0000", "")
-        if '답변:' in answer:
-            answer = answer.split('답변:')[1].strip()
+        try:
+            answer = answer.replace("assistant", "")
+            answer = answer.replace("\u0000", "")
+            if '답변:' in answer:
+                answer = answer.split('답변:')[1].strip()
+        except:
+            pass
         result_data[idx]["input"]["context"] = contexts[idx].strip() if contexts else ""
         try:
-            answer = generated_text[-1]['content'].split("<answer>")[1].split("</answer>")[0].replace('\n', '').strip()
+            answer = answer.split("<answer>")[1].split("</answer>")[0].replace('\n', '').strip()
             
         except:
             try:
-                answer = generated_text[-1]['content'].split("<answer>")[1].replace('\n', '').strip()
+                answer = answer.split("<answer>")[1].replace('\n', '').strip()
             except:
                 try:
-                    answer = generated_text[-1]['content'].split('/reasoning')[1].replace('\n', '').strip()
+                    answer = answer.split('/reasoning')[1].replace('\n', '').strip()
                 except:
-                    answer = generated_text[-1]['content'].replace('\n', '').strip()
+                    answer = answer.replace('\n', '').strip()
         result_data[idx]["output"] = {"answer": answer.strip()}
 
     return result_data
@@ -278,81 +281,6 @@ def generate_for_self_reflection(args, retriever, pipe, result_data):
         result_data[idx]['output'] = {"answer": answer.strip()}
 
     return result_data
-
-
-
-# Self-Reflection
-def generate_with_split_rationale(args, retriever, pipe, result_data):
-    logging.info("### Generate with split rationale ###")
-    prompts = []
-    system_prompt = make_system_prompt()
-    topic_keywords = []
-
-    logging.info("Preparing prompts...")
-    for item in tqdm.tqdm(result_data):
-        question = item["input"]["question"]
-        topic_keyword = item["input"]["topic_keyword"]
-        topic_keywords.append(topic_keyword)
-        context = ""
-        if args.retrieve or args.retrieve_adaptively:
-            context = retrieve_documents(topic_keyword, question, retriever)
-        
-        user_prompt = make_prompt_for_only_rationale(
-            question_type=item["input"]["question_type"],
-            category=item["input"]["category"],
-            domain=item["input"]["domain"],
-            topic_keyword=topic_keyword,
-            context=context,
-            question=question,
-            fewshot=True,
-            retrieve=args.retrieve or args.retrieve_adaptively,
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        # pipeline's tokenizer will apply the chat template
-        prompts.append(messages)
-
-    logging.info("Generating answers in batch...")
-    outputs = pipe(prompts)
-
-    logging.info("Processing generated answers...")
-    prompts = []
-    solutions = []
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        generated_text = output[0]['generated_text']
-        instruction = generated_text[1]['content'].split("[지침]\n")[1].split("\n\n")[0]
-        question = generated_text[1]['content'].split("[질문]\n")[1].split("[답변]")[0]
-        answer = generated_text[-1]['content']
-        user_prompt = make_prompt_for_only_answer(
-            question=question,
-            instruction=instruction,
-            answer=answer,
-            topic_keyword=topic_keywords[idx],
-        )
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        prompts.append(messages)
-        solutions.append(answer)
-        
-    outputs = pipe(prompts)
-    
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        generated_text = output[0]['generated_text']
-        answer = generated_text[-1]['content']
-        result_data[idx]["input"]["solution"] = solutions[idx].strip()
-        result_data[idx]["output"] = {"answer": answer.strip()}
-
-    return result_data
-
-
-
-
 
 # Consider logits for multiple choice
 def generate_for_multiple_choice(args, retriever, pipe, result_data):
@@ -558,53 +486,6 @@ def generate_with_verifier(args, retriever, pipe, result_data):
 
 
 
-# Generate Answers
-def generate_with_verified_context(args, retriever, pipe, result_data):
-    logging.info("### Generate answers ###")
-    prompts = []
-    system_prompt = make_system_prompt()
-    
-    logging.info("Preparing prompts...")
-    
-    for item in tqdm.tqdm(result_data):
-        question = item["input"]["question"]
-        topic_keyword = item["input"]["topic_keyword"]
-
-        context = item['output']['context']
-        
-        user_prompt = make_prompt(
-            question_type=item["input"]["question_type"],
-            category=item["input"]["category"],
-            domain=item["input"]["domain"],
-            topic_keyword=topic_keyword,
-            context=context,
-            question=question,
-            fewshot=True,
-            retrieve = args.retrieve or args.retrieve_adaptively
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        # pipeline's tokenizer will apply the chat template
-        prompts.append(messages)
-
-    logging.info("Generating answers in batch...")
-    outputs = pipe(prompts)
-
-    logging.info("Processing generated answers...")
-    for idx, output in enumerate(tqdm.tqdm(outputs)):
-        # The output from the pipeline is a list with a dictionary
-        generated_text = output[0]['generated_text']
-        answer = generated_text[-1]['content']
-        result_data[idx]["output"] = {"answer": answer.strip()}
-
-    return result_data
-
-
-
 def generate_final(args, pipe, result_data):
     logging.info("### Generate answers ###")
     prompts = []
@@ -614,7 +495,7 @@ def generate_final(args, pipe, result_data):
     regenerate_idx = []
     for idx, item in tqdm.tqdm(enumerate(result_data)):
         if item['output']['answer'].isdigit():
-            pass
+            continue
         user_prompt = final_answer_prompt_for_MC(
             topic_keyword=item["input"]["topic_keyword"],
             question=item["input"]["question"],
@@ -636,6 +517,13 @@ def generate_final(args, pipe, result_data):
         # The output from the pipeline is a list with a dictionary
         generated_text = output[0]['generated_text']
         answer = generated_text[-1]['content']
+        try:
+            answer = answer.replace("assistant", "")
+            answer = answer.replace("\u0000", "")
+            if '답변:' in answer:
+                answer = answer.split('답변:')[1].strip()
+        except:
+            pass
         result_data[regenerate_idx[idx]]["input"]["rationale"] = result_data[regenerate_idx[idx]]["output"]["answer"]
         result_data[regenerate_idx[idx]]["output"] = {"answer": answer.strip()}
 
