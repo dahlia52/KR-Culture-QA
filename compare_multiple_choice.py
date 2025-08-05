@@ -8,18 +8,18 @@ def compare_multiple_choice_answers():
     try:
         with open('/data5/wisdomjeong/Korean_Culture_QA_2025/resource/QA/final_try/submission3.json', 'r', encoding='utf-8') as f:
             file1_data = json.load(f)
-        print(f"Loaded {len(file1_data)} items from submission2.json")
+        print(f"Loaded {len(file1_data)} items from submission3.json")
     except Exception as e:
-        print(f"Error loading submission2.json: {e}")
+        print(f"Error loading submission3.json: {e}")
         return
 
     # Load the second JSON file (result_llama3_korean_blossom_8b.json)
     try:
-        with open('/data5/wisdomjeong/Korean_Culture_QA_2025/resource/QA/final_try/submission.json', 'r', encoding='utf-8') as f:
+        with open('/data5/wisdomjeong/Korean_Culture_QA_2025/resource/QA/result_0.7_2.json', 'r', encoding='utf-8') as f:
             file2_data = json.load(f)
-        print(f"Loaded {len(file2_data)} items from submission.json")
+        print(f"Loaded {len(file2_data)} items from result_0.7.json")
     except Exception as e:
-        print(f"Error loading submission.json: {e}")
+        print(f"Error loading result_0.7.json: {e}")
         return
 
     # Create a dictionary for faster lookup of questions from file2

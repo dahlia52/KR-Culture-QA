@@ -24,3 +24,6 @@ trl==0.19.1
 sacrebleu
 peft
 tf-keras
+wordcloud
+konlpy
+matplotlib
