@@ -2,8 +2,8 @@ resource/retrieval_docs/kowiki_dataset/*
 models/*
 wandb/*
 resource/retrieval_docs/chroma_db/*
-resource/QA/result_*
-resource/QA/sample_*
+resource/QA/result_*.json
+resource/QA/sample_*.json
 trainer_output/*
 log_*
 resource/KIIP/*
@@ -12,3 +12,4 @@ __pycache__/
 nanumfont.zip
 compare_*
 different_*
+compare_multiple_choice.py

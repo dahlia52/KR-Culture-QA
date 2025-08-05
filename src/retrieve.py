@@ -125,7 +125,7 @@ def custom_retriever(query: str, embeddings, vector_store: Chroma, k: int = 12, 
     # Filter documents based on similarity threshold
     filtered_docs = [doc for doc, sim in zip(docs, similarities) if sim >= threshold]
     
-    # 최소 3개의 문서를 보장하기 위해, 필터링된 문서가 3개 미만이면 가장 유사한 3개의 문서를 반환
+    # If filtered documents are less than 8, return top 8 documents
     if len(filtered_docs) < 8 and docs:
         return docs[:8]
 
