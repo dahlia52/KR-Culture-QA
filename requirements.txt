@@ -18,7 +18,7 @@ tf-keras
 wordcloud
 konlpy
 matplotlib==3.8.2
-
+pyparsing==3.2.0
 torch==2.7.0
 torchvision==0.22.0
 xformers==0.0.30
