@@ -109,7 +109,7 @@ python resource/retrieval_docs/download_chromadb.py
 ## EDA (Exploratory Data Analysis)
 EDA 결과는 assets 디렉토리에 저장됩니다.
 ```bash
-$ python -m run/EDA.py
+$ python -m run.EDA
 ```
 
 ## 학습 (Train)
