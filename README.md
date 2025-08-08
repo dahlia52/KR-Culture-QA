@@ -102,7 +102,6 @@ python resource/retrieval_docs/download_chromadb.py
 ```
 
 ## EDA (Exploratory Data Analysis)
-데이터셋을 분석하기 위해 아래 명령어를 실행합니다.
 
 ```bash
 $ python -m run/EDA.py
