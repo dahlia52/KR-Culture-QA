@@ -30,7 +30,7 @@ def parse_arguments():
     g.add_argument("--device", type=str, default="cuda", help="device to load the model")
     g.add_argument("--quantize", action="store_true", help="Whether to apply 4-bit quantization to the model")
     g.add_argument("--batch_size", type=int, default=2, help="Batch size for inference.")
-    g.add_argument("--temperature", type=float, default=0.8, help="Temperature for generation")
+    g.add_argument("--temperature", type=float, default=0.7, help="Temperature for generation")
     return parser.parse_args()
 
 
@@ -72,15 +72,16 @@ def main():
 
     embeddings, vector_store = load_vector_store(model=RETRIEVER_NAME, device=args.device, chroma_db_path=CHROMA_DB_PATH, kowiki_dataset_path=KOWIKI_DATASET_PATH)
 
-    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
-    contexts_mc = make_contexts(retriever, mc_data)
+    retriever_mc = vector_store.as_retriever(search_kwargs={"k": 1})
+    contexts_mc = make_contexts(retriever_mc, mc_data)
+    del retriever_mc
 
-    retriever = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
-    contexts_sa = make_contexts(retriever, sa_data)
+    retriever_sa = CustomRetriever(lambda query: custom_retriever(query, embeddings, vector_store))
+    contexts_sa = make_contexts(retriever_sa, sa_data)
+    del retriever_sa
 
     del embeddings
     del vector_store
-    del retriever
     torch.cuda.empty_cache()
     gc.collect()
 
