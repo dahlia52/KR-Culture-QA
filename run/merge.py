@@ -16,7 +16,7 @@ def merge_json_files(file1_path, file2_path, output_path):
 
 
 def main():
-    base_dir = Path("./resource/QA")
+    base_dir = Path("./resource/QA/data")
     train_file = base_dir / "korean_culture_qa_V1.0_train+.json"
     dev_file = base_dir / "korean_culture_qa_V1.0_dev+.json"
     output_file = base_dir / "korean_culture_qa_V1.0_total+.json"

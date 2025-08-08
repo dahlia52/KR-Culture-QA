@@ -185,7 +185,7 @@ def question_length_histogram(files):
 
 def main():
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    base_dir = Path(current_dir) / 'resource' / 'QA'
+    base_dir = Path(current_dir) / 'resource' / 'QA' / 'data'
     files = {
         'train': base_dir / 'korean_culture_qa_V1.0_train+.json',
         'dev': base_dir / 'korean_culture_qa_V1.0_dev+.json',
