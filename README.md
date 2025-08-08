@@ -13,12 +13,15 @@
 ```bash
 KR-Culture-QA
 ├── resource # 학습에 필요한 리소스들을 보관하는 디렉토리
-│   ├── QA # 학습, 평가 데이터셋을 보관하는 디렉토리
-│   │   └── korean_culture_qa_V1.0_train+.json
-│   │   └── korean_culture_qa_V1.0_dev+.json
-│   │   └── korean_culture_qa_V1.0_test+.json
-│   │   └── korean_culture_qa_V1.0_total+.json
-│   │   └── korean_culture_qa_V1.0_total+_remake.json
+│   ├── QA 
+│   │   └── data # 학습, 평가 데이터셋을 보관하는 디렉토리
+│   │   │   └── korean_culture_qa_V1.0_train+.json
+│   │   │   └── korean_culture_qa_V1.0_dev+.json
+│   │   │   └── korean_culture_qa_V1.0_test+.json
+│   │   │   └── korean_culture_qa_V1.0_total+.json
+│   │   │   └── korean_culture_qa_V1.0_total+_remake.json
+│   │   └── results # 추론 결과를 저장하는 디렉토리
+│   │   │   └── result.json
 │   └── retrieval_docs # 검색을 위해 데이터, DB를 구축하는 디렉토리
 │       └── download_rag_data.py 
 │       └── download_chromadb.py 
@@ -90,6 +93,7 @@ sh scripts/transform.sh
 ```
 
 - RAG 데이터 구축
+  데이터는 resource/retrieval_docs 디렉토리에 저장됩니다.
 ```bash
 # 한국어 위키피디아 데이터 내려받기
 python –m resource/retrieval_docs/download_rag_data.py
@@ -98,21 +102,24 @@ python –m resource/retrieval_docs/download_rag_data.py
 - ChromaDB 구축
 ```bash
 # ChromaDB 내려받기
+   ChromaDB는 resource/retrieval_docs 디렉토리에 저장됩니다.
 python resource/retrieval_docs/download_chromadb.py
 ```
 
 ## EDA (Exploratory Data Analysis)
-
+EDA 결과는 assets 디렉토리에 저장됩니다.
 ```bash
 $ python -m run/EDA.py
 ```
 
 ## 학습 (Train)
+모델은 models 디렉토리에 저장됩니다.
 ```bash
 $ sh scripts/train.sh
 ```
 
 ## 추론 (Inference)
+추론 결과는 resource/QA/results 디렉토리에 result.json 파일로 저장됩니다.
 ```bash
 $ sh scripts/test.sh
 ```
