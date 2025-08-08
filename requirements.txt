@@ -15,11 +15,7 @@ bitsandbytes
 chromadb
 Pyrebase4
 xformers --index-url https://download.pytorch.org/whl/cu118
-vllm==0.9.1
 trl==0.19.1
-# evaluate
-# rouge_score
-# bert_score
 sacrebleu
 peft
 tf-keras
