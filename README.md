@@ -40,3 +40,78 @@ KR-Culture-QA
     └── generate.py
     └── postprocess.py
 ```
+
+# 실행 방법
+
+## Requirements
+코드 실행을 위해 아래와 같은 환경이 필요합니다.
+- Ubuntu 22.04.4 LTS
+- Python 3.12.9
+- Miniconda 24.11.3
+- git
+
+
+### Miniconda 설치
+```bash
+$ cd ~ # 설치 파일을 다운로드할 경로로 이동 (to home directory)
+$ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh # Miniconda 설치 파일 다운로드
+$ bash Miniconda3-latest-Linux-x86_64.sh # 설치 파일 실행
+$ export PATH=~/miniconda3/bin:$PATH # 환경 변수 설정
+$ source ~/.bashrc # Anaconda 설치 후 bash shell 환경 재설정
+$ conda init # conda 초기화
+$ conda --version # conda 버전 확인
+```
+
+## 환경 설정
+
+### 개발 환경 설정
+```bash
+$ git clone https://github.com/dahlia52/KR-Culture-QA.git
+$ cd KR-Culture-QA
+$ conda create -n krqa python=3.12.9
+$ conda activate krqa
+$ pip install -r requirements.txt
+```
+
+### 한글 폰트 설치 (EDA 시 필요)
+```bash
+$ curl -o nanumfont.zip http://cdn.naver.com/naver/NanumFont/fontfiles/NanumFont_TTF_ALL.zip
+$ sudo unzip -d /usr/share/fonts/nanum nanumfont.zip
+$ sudo fc-cache -f -v
+$ fc-list | grep Nanum
+$ rm ~/.cache/matplotlib/fontlist*
+```
+
+## 데이터셋 준비
+- 학습 데이터셋 증강
+```bash
+# train.json과 dev.json을 합친 후 선다형 문제를 서술형 문제로 변경
+sh scripts/transform.sh
+```
+- 
+```bash
+# 한국어 위키피디아 데이터 내려받기
+python –m resource/retrieval_docs/download_rag_data.py
+```
+
+```bash
+# ChromaDB 내려받기
+python resource/retrieval_docs/download_chromadb.py
+```
+
+## EDA (Exploratory Data Analysis)
+데이터셋을 분석하기 위해 아래 명령어를 실행합니다.
+
+```bash
+$ python -m run/EDA.py
+```
+
+## 학습 (Train)
+```bash
+$ sh scripts/train.sh
+```
+
+## 추론 (Inference)
+```bash
+$ sh scripts/test.sh
+```
