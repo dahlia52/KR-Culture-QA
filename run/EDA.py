@@ -1,4 +1,3 @@
-import json
 import os
 import pandas as pd
 import numpy as np
@@ -10,11 +9,7 @@ from matplotlib import rc
 from konlpy.tag import Okt
 from src.data_io import load_dataset
 import matplotlib.pyplot as plt
-from sentence_transformers import SentenceTransformer
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-import hdbscan
-import umap
+
 
 # Set font family to NanumGothic
 rc('font', family='NanumGothic')
