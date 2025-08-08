@@ -88,12 +88,14 @@ $ rm ~/.cache/matplotlib/fontlist*
 # train.json과 dev.json을 합친 후 선다형 문제를 서술형 문제로 변경
 sh scripts/transform.sh
 ```
-- 
+
+- RAG 데이터 구축
 ```bash
 # 한국어 위키피디아 데이터 내려받기
 python –m resource/retrieval_docs/download_rag_data.py
 ```
 
+- ChromaDB 구축
 ```bash
 # ChromaDB 내려받기
 python resource/retrieval_docs/download_chromadb.py
