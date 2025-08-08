@@ -1,6 +1,4 @@
-# pip install -r requirements.txt --use-pep517
 transformers==4.53.1
-torch==2.7.0
 datasets==4.0.0
 numpy
 tqdm
@@ -14,11 +12,13 @@ sentence-transformers
 bitsandbytes
 chromadb
 Pyrebase4
-vllm==0.9.1
-xformers --index-url https://download.pytorch.org/whl/cu118
 trl==0.19.1
 peft
 tf-keras
 wordcloud
 konlpy
-matplotlib
+matplotlib==3.8.2
+
+torch==2.7.0
+torchvision==0.22.0
+xformers==0.0.30
