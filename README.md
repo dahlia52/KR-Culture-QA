@@ -49,7 +49,7 @@ KR-Culture-QA
 ## Requirements
 코드 실행을 위해 아래와 같은 환경이 필요합니다.
 - Ubuntu 22.04.4 LTS
-- Python 3.10.18
+- Python 3.12.9
 - Miniconda 24.11.3
 - git
 
@@ -71,7 +71,7 @@ $ conda --version # conda 버전 확인
 ```bash
 $ git clone https://github.com/dahlia52/KR-Culture-QA.git
 $ cd KR-Culture-QA
-$ conda create -n krqa python=3.10.18
+$ conda create -n krqa python=3.12.9
 $ conda activate krqa
 $ pip install -r requirements.txt
 ```
