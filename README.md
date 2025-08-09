@@ -79,10 +79,9 @@ $ pip install -r requirements.txt
 ### 한글 폰트 설치 (EDA 시 필요)
 ```bash
 $ curl -o nanumfont.zip http://cdn.naver.com/naver/NanumFont/fontfiles/NanumFont_TTF_ALL.zip
-$ sudo unzip -d /usr/share/fonts/nanum nanumfont.zip
-$ sudo fc-cache -f -v
-$ fc-list | grep Nanum
-$ rm ~/.cache/matplotlib/fontlist*
+$ mkdir -p ~/.local/share/fonts/nanum
+$ unzip nanumfont.zip -d ~/.local/share/fonts/nanum
+$ fc-cache -fv
 ```
 
 ## 데이터셋 준비
@@ -109,7 +108,7 @@ python resource/retrieval_docs/download_chromadb.py
 ## EDA (Exploratory Data Analysis)
 EDA 결과는 assets 디렉토리에 저장됩니다.
 ```bash
-$ python run/EDA.py
+$ python -m run.EDA
 ```
 
 ## 학습 (Train)
