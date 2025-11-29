@@ -1,5 +1,6 @@
 <div align='center'>
    <h1>2025년 국립국어원 AI 말평 경진 대회<br>- 한국문화 질의응답 (나 유형)</h1>
+   최종 리더보드 5위
 </div>
 
 <div align="center">
